@@ -1,0 +1,124 @@
+/* Blog-specific styles */
+.article-content pre {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.article-content h1 {
+  font-size: 2.25rem;
+  color: rgb(15 23 42);
+}
+
+.dark .article-content h1 {
+  color: rgb(248 250 252);
+}
+
+.article-content h2 {
+  font-size: 1.875rem;
+  color: rgb(15 23 42);
+}
+
+.dark .article-content h2 {
+  color: rgb(248 250 252);
+}
+
+.article-content h3 {
+  font-size: 1.5rem;
+  color: rgb(15 23 42);
+}
+
+.dark .article-content h3 {
+  color: rgb(248 250 252);
+}
+
+.article-content h4 {
+  font-size: 1.25rem;
+  color: rgb(15 23 42);
+}
+
+.dark .article-content h4 {
+  color: rgb(248 250 252);
+}
+
+.article-content p {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+.article-content ul,
+.article-content ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.article-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.article-content strong {
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.dark .article-content strong {
+  color: rgb(248 250 252);
+}
+
+.article-content code {
+  background-color: rgb(241 245 249);
+  color: rgb(51 65 85);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.dark .article-content code {
+  background-color: rgb(51 65 85);
+  color: rgb(226 232 240);
+}
+
+.article-content pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .article-content h1 {
+    font-size: 1.875rem;
+  }
+  
+  .article-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  .article-content h3 {
+    font-size: 1.25rem;
+  }
+  
+  .article-content h4 {
+    font-size: 1.125rem;
+  }
+}
+
