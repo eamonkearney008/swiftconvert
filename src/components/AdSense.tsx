@@ -19,14 +19,29 @@ export default function AdSense({
 }: AdSenseProps) {
   useEffect(() => {
     try {
-      // Initialize AdSense
-      if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
-        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+      // Initialize AdSense after component mounts
+      if (typeof window !== 'undefined') {
+        console.log('AdSense: Initializing ad slot', adSlot);
+        
+        // Wait for AdSense script to load
+        const initAdSense = () => {
+          if ((window as any).adsbygoogle) {
+            console.log('AdSense: Script loaded, pushing ad');
+            ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+          } else {
+            console.log('AdSense: Script not loaded yet, retrying...');
+            // Retry after a short delay if AdSense script isn't loaded yet
+            setTimeout(initAdSense, 100);
+          }
+        };
+        
+        // Start initialization
+        initAdSense();
       }
     } catch (error) {
       console.error('AdSense error:', error);
     }
-  }, []);
+  }, [adSlot]);
 
   return (
     <div className={`adsense-container ${className}`}>
