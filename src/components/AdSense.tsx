@@ -60,7 +60,7 @@ export default function AdSense({
   }, [adSlot]);
 
   return (
-    <div className={`adsense-container ${className}`} style={{ border: '1px dashed #ccc', minHeight: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className={`adsense-container ${className}`}>
       <ins
         className="adsbygoogle"
         style={adStyle}
@@ -69,9 +69,6 @@ export default function AdSense({
         data-ad-format={adFormat}
         data-full-width-responsive={responsive ? 'true' : 'false'}
       />
-      <div style={{ position: 'absolute', fontSize: '12px', color: '#666', background: 'rgba(255,255,255,0.8)', padding: '2px 4px', borderRadius: '2px' }}>
-        AdSense Slot: {adSlot}
-      </div>
     </div>
   );
 }
