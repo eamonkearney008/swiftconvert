@@ -46,10 +46,11 @@ export default function AdSense({
 export function HeaderAd() {
   return (
     <AdSense
-      adSlot="1234567890" // Replace with your actual ad slot ID
-      adFormat="horizontal"
+      adSlot="8814889787" // Using main page ad slot for now
+      adFormat="auto"
       className="w-full max-w-728x90 mx-auto mb-4"
-      adStyle={{ display: 'block', width: '728px', height: '90px' }}
+      adStyle={{ display: 'block' }}
+      responsive={true}
     />
   );
 }
@@ -57,10 +58,11 @@ export function HeaderAd() {
 export function SidebarAd() {
   return (
     <AdSense
-      adSlot="0987654321" // Replace with your actual ad slot ID
-      adFormat="vertical"
+      adSlot="8814889787" // Using main page ad slot for now
+      adFormat="auto"
       className="w-full max-w-300x250 mx-auto"
-      adStyle={{ display: 'block', width: '300px', height: '250px' }}
+      adStyle={{ display: 'block' }}
+      responsive={true}
     />
   );
 }
@@ -68,10 +70,11 @@ export function SidebarAd() {
 export function InContentAd() {
   return (
     <AdSense
-      adSlot="1122334455" // Replace with your actual ad slot ID
-      adFormat="rectangle"
+      adSlot="8814889787" // Real ad slot ID from AdSense dashboard
+      adFormat="auto"
       className="w-full max-w-336x280 mx-auto my-8"
-      adStyle={{ display: 'block', width: '336px', height: '280px' }}
+      adStyle={{ display: 'block' }}
+      responsive={true}
     />
   );
 }
@@ -79,10 +82,11 @@ export function InContentAd() {
 export function FooterAd() {
   return (
     <AdSense
-      adSlot="5566778899" // Replace with your actual ad slot ID
-      adFormat="horizontal"
+      adSlot="8814889787" // Using main page ad slot for now
+      adFormat="auto"
       className="w-full max-w-728x90 mx-auto mt-8"
-      adStyle={{ display: 'block', width: '728px', height: '90px' }}
+      adStyle={{ display: 'block' }}
+      responsive={true}
     />
   );
 }
