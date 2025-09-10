@@ -51,12 +51,29 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           return;
         }
 
-        // Check file size (max 50MB for preview)
-        if (file.size > 50 * 1024 * 1024) {
-          console.error('File too large for preview:', file.size);
+        // Check file size - more restrictive on mobile
+        const isMobile = window.innerWidth <= 768;
+        const maxSize = isMobile ? 2 * 1024 * 1024 : 10 * 1024 * 1024; // 2MB on mobile, 10MB on desktop
+        
+        if (file.size > maxSize) {
+          console.error(`File too large for preview: ${file.size} bytes (max: ${maxSize} bytes on ${isMobile ? 'mobile' : 'desktop'})`);
           setError(true);
           setIsLoading(false);
           return;
+        }
+        
+        console.log(`File size check passed: ${file.size} bytes (${isMobile ? 'mobile' : 'desktop'} limit: ${maxSize} bytes)`);
+
+        // For mobile and large files, try to resize first
+        let fileToUse = file;
+        if (isMobile && file.size > 1024 * 1024) { // 1MB threshold for resizing
+          try {
+            console.log('Large file on mobile - attempting to resize for preview...');
+            fileToUse = await resizeImageForMobile(file);
+          } catch (resizeError) {
+            console.log('Resize failed, using original file:', resizeError);
+            fileToUse = file;
+          }
         }
 
         // Try multiple approaches in sequence
@@ -66,13 +83,13 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
         try {
           console.log('Trying URL.createObjectURL...');
           console.log('File before URL.createObjectURL:', {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            lastModified: file.lastModified
+            name: fileToUse.name,
+            type: fileToUse.type,
+            size: fileToUse.size,
+            lastModified: fileToUse.lastModified
           });
           
-          const url = URL.createObjectURL(file);
+          const url = URL.createObjectURL(fileToUse);
           console.log('URL created:', url);
           setObjectURL(url);
           
@@ -122,9 +139,9 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           try {
             console.log('Trying FileReader...');
             console.log('File for FileReader:', {
-              name: file.name,
-              type: file.type,
-              size: file.size
+              name: fileToUse.name,
+              type: fileToUse.type,
+              size: fileToUse.size
             });
             
             const reader = new FileReader();
@@ -195,7 +212,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
               clearTimeout(timeout);
             };
 
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(fileToUse);
             
           } catch (readerError) {
             console.error('FileReader initialization error:', readerError);
@@ -210,7 +227,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           
           try {
             console.log('Trying direct URL.createObjectURL without image test...');
-            const url = URL.createObjectURL(file);
+            const url = URL.createObjectURL(fileToUse);
             setObjectURL(url);
             setPreview(url);
             setIsLoading(false);
@@ -243,6 +260,55 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
       }
     };
   }, [objectURL]);
+
+  // Function to resize image for mobile preview
+  const resizeImageForMobile = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        try {
+          // Calculate new dimensions (max 800px on longest side)
+          const maxSize = 800;
+          let { width, height } = img;
+          
+          if (width > height && width > maxSize) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          } else if (height > maxSize) {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          if (ctx) {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, width, height);
+          }
+          
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const resizedFile = new File([blob], file.name, { type: 'image/jpeg' });
+              console.log(`Image resized: ${file.size} → ${resizedFile.size} bytes`);
+              resolve(resizedFile);
+            } else {
+              reject(new Error('Failed to create resized image'));
+            }
+          }, 'image/jpeg', 0.8);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image for resizing'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
 
   // Retry function
   const handleRetry = () => {
@@ -316,6 +382,11 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             <p className="text-xs text-red-500 dark:text-red-500 mt-1">
               File will still be converted
             </p>
+            {file.size > 2 * 1024 * 1024 && (
+              <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                Large file ({Math.round(file.size / 1024 / 1024)}MB) - preview may be slow
+              </p>
+            )}
             {retryCount < 2 && (
               <button
                 onClick={handleRetry}
