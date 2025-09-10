@@ -260,9 +260,29 @@
   }
 }
 
+/* Global mobile overflow prevention */
+html, body {
+  overflow-x: hidden !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+}
+
 /* Mobile slider improvements */
 @media (max-width: 768px) {
-  [data-slot="slider"] {
+  /* Prevent any horizontal scrolling on mobile */
+  * {
+    max-width: 100vw !important;
+  }
+  
+  /* Ensure all containers don't overflow */
+  .max-w-7xl {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Prevent horizontal scrolling on any slider interaction */
+  [data-slot="slider"],
+  .mobile-slider-container {
     touch-action: pan-y pinch-zoom !important;
     -webkit-touch-callout: none !important;
     -webkit-user-select: none !important;
@@ -277,17 +297,19 @@
     -webkit-touch-callout: none !important;
   }
   
-  /* Prevent horizontal scrolling on slider interaction */
-  [data-slot="slider"]:active,
-  [data-slot="slider"]:focus,
-  [data-slot="slider"]:hover {
-    overflow-x: hidden !important;
-    touch-action: pan-y pinch-zoom !important;
+  /* Aggressive body lock during any touch interaction */
+  body.slider-active,
+  body.touch-active {
+    overflow: hidden !important;
+    touch-action: none !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
   }
   
-  /* Prevent body scrolling when slider is being used */
-  body.slider-active {
+  /* Prevent horizontal scrolling on any element */
+  *:active,
+  *:focus {
     overflow-x: hidden !important;
-    touch-action: pan-y !important;
   }
 }

@@ -36,9 +36,17 @@ export function MobileSlider({
     e.preventDefault()
     e.stopPropagation()
     
-    // Prevent body scrolling
+    // Aggressively prevent body scrolling
     document.body.style.overflow = 'hidden'
     document.body.style.touchAction = 'none'
+    document.body.style.position = 'fixed'
+    document.body.style.width = '100%'
+    document.body.style.height = '100%'
+    document.body.classList.add('touch-active')
+    
+    // Prevent scrolling on html element too
+    document.documentElement.style.overflow = 'hidden'
+    document.documentElement.style.touchAction = 'none'
     
     setIsDragging(true)
     setStartX(e.touches[0].clientX)
@@ -79,6 +87,14 @@ export function MobileSlider({
     // Restore body scrolling
     document.body.style.overflow = ''
     document.body.style.touchAction = ''
+    document.body.style.position = ''
+    document.body.style.width = ''
+    document.body.style.height = ''
+    document.body.classList.remove('touch-active')
+    
+    // Restore html element
+    document.documentElement.style.overflow = ''
+    document.documentElement.style.touchAction = ''
     
     setIsDragging(false)
   }, [isDragging])
@@ -137,6 +153,12 @@ export function MobileSlider({
     return () => {
       document.body.style.overflow = ''
       document.body.style.touchAction = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.height = ''
+      document.body.classList.remove('touch-active')
+      document.documentElement.style.overflow = ''
+      document.documentElement.style.touchAction = ''
     }
   }, [])
 
@@ -146,7 +168,7 @@ export function MobileSlider({
     <div
       ref={sliderRef}
       className={cn(
-        "relative flex w-full items-center select-none",
+        "mobile-slider-container relative flex w-full items-center select-none",
         disabled && "opacity-50 pointer-events-none",
         className
       )}
