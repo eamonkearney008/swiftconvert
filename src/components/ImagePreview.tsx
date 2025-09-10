@@ -14,10 +14,16 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [objectURL, setObjectURL] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const loadPreview = async () => {
       try {
+        // Reset states
+        setError(false);
+        setIsLoading(true);
+        setPreview(null);
+
         // Validate file before reading
         if (!file || !file.name || file.size === undefined) {
           console.error('Invalid file object:', file);
@@ -25,6 +31,8 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           setIsLoading(false);
           return;
         }
+
+        console.log('Loading preview for file:', file.name, 'Type:', file.type, 'Size:', file.size);
 
         // Check file type more thoroughly
         const isValidImage = file.type && (
@@ -47,73 +55,131 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           return;
         }
 
-        // Try FileReader first
-        const reader = new FileReader();
-        
-        reader.onload = (e) => {
+        // Try multiple approaches in sequence
+        let previewLoaded = false;
+
+        // Approach 1: URL.createObjectURL (most reliable on mobile)
+        try {
+          console.log('Trying URL.createObjectURL...');
+          const url = URL.createObjectURL(file);
+          setObjectURL(url);
+          
+          // Test if the URL works by creating an image
+          const testImg = new Image();
+          testImg.onload = () => {
+            console.log('URL.createObjectURL success');
+            setPreview(url);
+            setIsLoading(false);
+            previewLoaded = true;
+          };
+          testImg.onerror = () => {
+            console.log('URL.createObjectURL failed, trying FileReader...');
+            URL.revokeObjectURL(url);
+            setObjectURL(null);
+            
+            // Approach 2: FileReader
+            if (!previewLoaded) {
+              tryFileReader();
+            }
+          };
+          testImg.src = url;
+          
+          // Timeout for image test
+          setTimeout(() => {
+            if (!previewLoaded) {
+              console.log('URL.createObjectURL timeout, trying FileReader...');
+              URL.revokeObjectURL(url);
+              setObjectURL(null);
+              tryFileReader();
+            }
+          }, 3000);
+          
+        } catch (urlError) {
+          console.error('URL.createObjectURL error:', urlError);
+          tryFileReader();
+        }
+
+        function tryFileReader() {
+          if (previewLoaded) return;
+          
           try {
-            const result = e.target?.result;
-            if (result && typeof result === 'string') {
-              setPreview(result);
-              setIsLoading(false);
-            } else {
-              console.error('FileReader returned invalid result:', result);
+            console.log('Trying FileReader...');
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+              try {
+                const result = e.target?.result;
+                if (result && typeof result === 'string' && result.startsWith('data:')) {
+                  console.log('FileReader success');
+                  setPreview(result);
+                  setIsLoading(false);
+                  previewLoaded = true;
+                } else {
+                  console.error('FileReader returned invalid result:', result);
+                  if (!previewLoaded) {
+                    setError(true);
+                    setIsLoading(false);
+                  }
+                }
+              } catch (loadError) {
+                console.error('Error setting preview:', loadError);
+                if (!previewLoaded) {
+                  setError(true);
+                  setIsLoading(false);
+                }
+              }
+            };
+
+            reader.onerror = (error) => {
+              console.error('FileReader error:', error);
+              if (!previewLoaded) {
+                setError(true);
+                setIsLoading(false);
+              }
+            };
+
+            reader.onabort = () => {
+              console.error('FileReader aborted');
+              if (!previewLoaded) {
+                setError(true);
+                setIsLoading(false);
+              }
+            };
+
+            // Set timeout for FileReader
+            const timeout = setTimeout(() => {
+              if (!previewLoaded) {
+                console.error('FileReader timeout');
+                reader.abort();
+                setError(true);
+                setIsLoading(false);
+              }
+            }, 5000);
+
+            reader.onloadend = () => {
+              clearTimeout(timeout);
+            };
+
+            reader.readAsDataURL(file);
+            
+          } catch (readerError) {
+            console.error('FileReader initialization error:', readerError);
+            if (!previewLoaded) {
               setError(true);
               setIsLoading(false);
             }
-          } catch (loadError) {
-            console.error('Error setting preview:', loadError);
-            setError(true);
-            setIsLoading(false);
           }
-        };
-
-        reader.onerror = (error) => {
-          console.error('FileReader error:', error);
-          setError(true);
-          setIsLoading(false);
-        };
-
-        reader.onabort = () => {
-          console.error('FileReader aborted');
-          setError(true);
-          setIsLoading(false);
-        };
-
-        // Set timeout for FileReader
-        const timeout = setTimeout(() => {
-          console.error('FileReader timeout');
-          reader.abort();
-          setError(true);
-          setIsLoading(false);
-        }, 10000); // 10 second timeout
-
-        reader.onloadend = () => {
-          clearTimeout(timeout);
-        };
-
-        reader.readAsDataURL(file);
+        }
 
       } catch (error) {
-        console.error('Error initializing FileReader:', error);
-        
-        // Fallback: try URL.createObjectURL
-        try {
-          console.log('Trying URL.createObjectURL fallback');
-          const url = URL.createObjectURL(file);
-          setObjectURL(url);
-          setPreview(url);
-          setIsLoading(false);
-        } catch (fallbackError) {
-          console.error('Fallback also failed:', fallbackError);
-          setError(true);
-          setIsLoading(false);
-        }
+        console.error('Error in loadPreview:', error);
+        setError(true);
+        setIsLoading(false);
       }
     };
 
     loadPreview();
-  }, [file]);
+  }, [file, retryCount]);
 
   // Cleanup object URL on unmount
   useEffect(() => {
@@ -180,16 +246,46 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             <p className="text-xs text-red-500 dark:text-red-500 mt-1">
               File will still be converted
             </p>
+            {retryCount < 2 && (
+              <button
+                onClick={() => {
+                  setRetryCount(prev => prev + 1);
+                  setError(false);
+                  setIsLoading(true);
+                  // Trigger reload by updating a dependency
+                }}
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
+              >
+                Retry preview
+              </button>
+            )}
           </div>
         </div>
-        <button
-          onClick={onRemove}
-          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        <div className="flex space-x-2">
+          {retryCount < 2 && (
+            <button
+              onClick={() => {
+                setRetryCount(prev => prev + 1);
+                setError(false);
+                setIsLoading(true);
+              }}
+              className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+              title="Retry preview"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          )}
+          <button
+            onClick={onRemove}
+            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </motion.div>
     );
   }
