@@ -263,19 +263,31 @@
 /* Mobile slider improvements */
 @media (max-width: 768px) {
   [data-slot="slider"] {
-    touch-action: pan-y;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
+    touch-action: pan-y pinch-zoom !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    overflow-x: hidden !important;
+    position: relative;
   }
   
   [data-slot="slider-thumb"] {
-    touch-action: none;
-    -webkit-tap-highlight-color: transparent;
+    touch-action: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
   }
   
   /* Prevent horizontal scrolling on slider interaction */
-  [data-slot="slider"]:active {
-    overflow-x: hidden;
+  [data-slot="slider"]:active,
+  [data-slot="slider"]:focus,
+  [data-slot="slider"]:hover {
+    overflow-x: hidden !important;
+    touch-action: pan-y pinch-zoom !important;
+  }
+  
+  /* Prevent body scrolling when slider is being used */
+  body.slider-active {
+    overflow-x: hidden !important;
+    touch-action: pan-y !important;
   }
 }

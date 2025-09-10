@@ -23,6 +23,13 @@ function Slider({
     [value, defaultValue, min, max]
   )
 
+  // Cleanup effect to remove slider-active class
+  React.useEffect(() => {
+    return () => {
+      document.body.classList.remove('slider-active');
+    };
+  }, []);
+
   return (
     <SliderPrimitive.Root
       data-slot="slider"
@@ -38,11 +45,33 @@ function Slider({
         // Prevent scrolling on mobile when interacting with slider
         if (e.pointerType === 'touch') {
           e.preventDefault();
+          e.stopPropagation();
         }
       }}
       onTouchStart={(e) => {
         // Prevent default touch behavior to avoid scrolling
         e.preventDefault();
+        e.stopPropagation();
+        // Add class to body to prevent horizontal scrolling
+        document.body.classList.add('slider-active');
+      }}
+      onTouchMove={(e) => {
+        // Prevent horizontal scrolling during touch move
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onTouchEnd={(e) => {
+        // Prevent any default behavior on touch end
+        e.preventDefault();
+        e.stopPropagation();
+        // Remove class from body
+        document.body.classList.remove('slider-active');
+      }}
+      style={{
+        touchAction: 'pan-y pinch-zoom',
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none'
       }}
       {...props}
     >
