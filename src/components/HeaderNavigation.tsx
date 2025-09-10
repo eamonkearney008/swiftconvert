@@ -22,7 +22,7 @@ export default function HeaderNavigation() {
       </div>
       
       {/* Mobile Navigation Button */}
-      <div className="md:hidden mr-8">
+      <div className="md:hidden mr-12">
         <a
           href="/blog"
           className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium text-sm"
