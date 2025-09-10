@@ -7,7 +7,6 @@ import { Skeleton, ConversionSkeleton, StatsSkeleton, HistorySkeleton } from '..
 import { LazyImagePreview, LazyConversionResults, LazyProgressTracker, LazyConversionSettings, LazyFileUpload } from '../components/LazyComponents';
 import { Tooltip } from '../components/ui/tooltip';
 import { FormatConverter } from '../lib/format-converters';
-import { getWorkerManager } from '../lib/worker-manager';
 import { getPerformanceMonitor } from '../lib/performance';
 import HeaderNavigation from '../components/HeaderNavigation';
 import { InContentAd } from '../components/AdSense';
@@ -250,19 +249,38 @@ function HomeContent() {
       const results: any[] = [];
       
       if (conversionMethod === 'local') {
-        // Local processing using Canvas API
-        for (let i = 0; i < selectedFiles.length; i++) {
-          const file = selectedFiles[i];
+        // Local processing with batch optimization
+        const batchSize = Math.min(3, selectedFiles.length); // Process max 3 files concurrently
+        const batches = [];
+        
+        for (let i = 0; i < selectedFiles.length; i += batchSize) {
+          batches.push(selectedFiles.slice(i, i + batchSize));
+        }
+        
+        for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+          const batch = batches[batchIndex];
           
-          setConversionProgress({ 
-            current: i + 1, 
-            total: selectedFiles.length, 
-            currentFile: file.name 
+          // Process batch concurrently
+          const batchPromises = batch.map(async (file, fileIndex) => {
+            const globalIndex = batchIndex * batchSize + fileIndex;
+            setConversionProgress({ 
+              current: globalIndex + 1, 
+              total: selectedFiles.length, 
+              currentFile: file.name 
+            });
+            
+            const result = await convertImageLocally(file, currentSettings);
+            setConversionResults(prev => [...prev, result]);
+            return result;
           });
           
-          const result = await convertImageLocally(file, currentSettings);
-          results.push(result);
-          setConversionResults(prev => [...prev, result]);
+          const batchResults = await Promise.all(batchPromises);
+          results.push(...batchResults);
+          
+          // Small delay between batches to prevent UI blocking
+          if (batchIndex < batches.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
         }
       } else {
         // Edge processing using API
@@ -306,49 +324,36 @@ function HomeContent() {
 
   const convertImageLocally = async (file: File, settings: any) => {
     try {
-      // Try Web Worker first for better performance
-      if (typeof Worker !== 'undefined') {
-        try {
-          const workerManager = getWorkerManager();
-          const result = await workerManager.convertImage(file, settings, settings.format);
-          
-          if (result.type === 'CONVERSION_COMPLETE') {
-            return {
+      // Use requestIdleCallback to avoid blocking the main thread
+      return new Promise((resolve, reject) => {
+        const processConversion = async () => {
+          try {
+            // Use FormatConverter with optimized settings
+            const result = await FormatConverter.convertToFormat(file, settings.format, settings.quality);
+            
+            resolve({
               originalFile: file,
-              convertedFile: result.data.blob,
-              originalSize: result.data.originalSize,
-              convertedSize: result.data.compressedSize,
+              convertedFile: result.blob,
+              originalSize: file.size,
+              convertedSize: result.blob.size,
               format: settings.format,
-              actualFormat: result.data.format,
-              fallbackUsed: false,
+              actualFormat: result.actualFormat,
+              fallbackUsed: result.fallbackUsed,
               quality: settings.quality,
-              method: 'worker',
-              compressionRatio: result.data.compressionRatio,
-              dimensions: result.data.dimensions
-            };
-          } else {
-            throw new Error(result.error || 'Worker conversion failed');
+              method: 'optimized-main-thread'
+            });
+          } catch (error) {
+            reject(new Error(`Failed to convert image: ${error instanceof Error ? error.message : 'Unknown error'}`));
           }
-        } catch (workerError) {
-          console.warn('Web Worker failed, falling back to main thread:', workerError);
-          // Fall back to main thread conversion
+        };
+
+        // Use requestIdleCallback if available, otherwise use setTimeout
+        if (typeof requestIdleCallback !== 'undefined') {
+          requestIdleCallback(processConversion, { timeout: 100 });
+        } else {
+          setTimeout(processConversion, 0);
         }
-      }
-      
-      // Fallback to main thread conversion
-      const result = await FormatConverter.convertToFormat(file, settings.format, settings.quality);
-      
-      return {
-        originalFile: file,
-        convertedFile: result.blob,
-        originalSize: file.size,
-        convertedSize: result.blob.size,
-        format: settings.format,
-        actualFormat: result.actualFormat,
-        fallbackUsed: result.fallbackUsed,
-        quality: settings.quality,
-        method: 'main-thread'
-      };
+      });
     } catch (error) {
       throw new Error(`Failed to convert image: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }

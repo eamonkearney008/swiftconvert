@@ -195,7 +195,7 @@ export class FormatConverter {
   }
 
   /**
-   * Convert image to any supported format
+   * Convert image to any supported format with performance optimizations
    */
   static async convertToFormat(file: File, format: string, quality: number = 85): Promise<ConversionResult> {
     switch (format.toLowerCase()) {
@@ -210,36 +210,80 @@ export class FormatConverter {
       case 'ico':
         return this.convertToICO(file);
       default:
-        // For native formats (webp, avif, png, jpg), use standard canvas conversion
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        
-        return new Promise((resolve, reject) => {
-          img.onload = () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx?.drawImage(img, 0, 0);
-            
-            const mimeType = `image/${format}`;
-            const qualityValue = format === 'png' ? undefined : quality / 100;
-            
-            canvas.toBlob((blob) => {
+        // For native formats (webp, avif, png, jpg), use optimized canvas conversion
+        return this.convertWithOptimizedCanvas(file, format, quality);
+    }
+  }
+
+  /**
+   * Optimized canvas conversion with performance improvements
+   */
+  private static async convertWithOptimizedCanvas(file: File, format: string, quality: number): Promise<ConversionResult> {
+    // Use OffscreenCanvas if available for better performance
+    const canvas = typeof OffscreenCanvas !== 'undefined' 
+      ? new OffscreenCanvas(1, 1) 
+      : document.createElement('canvas');
+    
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    return new Promise((resolve, reject) => {
+      img.onload = () => {
+        try {
+          // Set canvas dimensions
+          canvas.width = img.width;
+          canvas.height = img.height;
+          
+          // Use imageSmoothingEnabled for better quality
+          if (ctx) {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0);
+          }
+          
+          const mimeType = `image/${format}`;
+          const qualityValue = format === 'png' ? undefined : quality / 100;
+          
+          // Use convertToBlob for OffscreenCanvas or toBlob for regular canvas
+          if (canvas instanceof OffscreenCanvas) {
+            canvas.convertToBlob({ type: mimeType, quality: qualityValue })
+              .then(blob => {
+                if (blob) {
+                  resolve({ blob, actualFormat: format });
+                } else {
+                  reject(new Error(`Failed to convert to ${format}`));
+                }
+              })
+              .catch(error => reject(new Error(`Conversion failed: ${error.message}`)));
+          } else {
+            (canvas as HTMLCanvasElement).toBlob((blob) => {
               if (blob) {
-                resolve({
-                  blob,
-                  actualFormat: format
-                });
+                resolve({ blob, actualFormat: format });
               } else {
                 reject(new Error(`Failed to convert to ${format}`));
               }
             }, mimeType, qualityValue);
-          };
-          
-          img.onerror = () => reject(new Error('Failed to load image'));
-          img.src = URL.createObjectURL(file);
-        });
-    }
+          }
+        } catch (error) {
+          reject(new Error(`Canvas processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        }
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      
+      // Use createImageBitmap for better performance if available
+      if (typeof createImageBitmap !== 'undefined') {
+        createImageBitmap(file)
+          .then(bitmap => {
+            img.src = URL.createObjectURL(file);
+          })
+          .catch(() => {
+            img.src = URL.createObjectURL(file);
+          });
+      } else {
+        img.src = URL.createObjectURL(file);
+      }
+    });
   }
 }
 
