@@ -117,25 +117,65 @@ function HomeContent() {
   }, []);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const files = Array.from(e.target.files);
-      const imageFiles = files.filter(file => file.type.startsWith('image/'));
-      
-      if (imageFiles.length > 0) {
-        setSelectedFiles(prev => [...prev, ...imageFiles]);
-        setError(null);
-        addToast({
-          type: 'success',
-          title: 'Files Added',
-          description: `${imageFiles.length} image${imageFiles.length > 1 ? 's' : ''} ready for conversion`
+    try {
+      if (e.target.files && e.target.files.length > 0) {
+        const files = Array.from(e.target.files);
+        
+        // Validate files before processing
+        const validFiles: File[] = [];
+        const errors: string[] = [];
+        
+        files.forEach(file => {
+          try {
+            // Check if file is valid
+            if (!file || !file.name || file.size === undefined) {
+              errors.push(`Invalid file: ${file?.name || 'unknown'}`);
+              return;
+            }
+            
+            // Check file size (max 100MB)
+            if (file.size > 100 * 1024 * 1024) {
+              errors.push(`File too large: ${file.name} (${Math.round(file.size / 1024 / 1024)}MB)`);
+              return;
+            }
+            
+            // Check if it's an image
+            if (file.type && file.type.startsWith('image/')) {
+              validFiles.push(file);
+            } else {
+              errors.push(`Not an image: ${file.name}`);
+            }
+          } catch (fileError) {
+            console.error('Error processing file:', fileError);
+            errors.push(`Error processing file: ${file.name}`);
+          }
         });
-      } else {
-        addToast({
-          type: 'error',
-          title: 'Invalid Files',
-          description: 'Please select only image files'
-        });
+        
+        if (validFiles.length > 0) {
+          setSelectedFiles(prev => [...prev, ...validFiles]);
+          setError(null);
+          addToast({
+            type: 'success',
+            title: 'Files Added',
+            description: `${validFiles.length} image${validFiles.length > 1 ? 's' : ''} ready for conversion`
+          });
+        }
+        
+        if (errors.length > 0) {
+          addToast({
+            type: 'error',
+            title: 'File Upload Issues',
+            description: errors.slice(0, 3).join(', ') + (errors.length > 3 ? '...' : '')
+          });
+        }
       }
+    } catch (error) {
+      console.error('File input error:', error);
+      addToast({
+        type: 'error',
+        title: 'Upload Failed',
+        description: 'An error occurred while processing the files. Please try again.'
+      });
     }
   };
 
@@ -610,7 +650,7 @@ function HomeContent() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <AnimatePresence>
                       {selectedFiles.map((file, index) => (
-                        <ImagePreview
+                        <LazyImagePreview
                           key={`${file.name}-${index}`}
                           file={file}
                           index={index}

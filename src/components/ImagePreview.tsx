@@ -9,22 +9,43 @@ interface ImagePreviewProps {
   index: number;
 }
 
-export function ImagePreview({ file, onRemove, index }: ImagePreviewProps) {
+export default function ImagePreview({ file, onRemove, index }: ImagePreviewProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
-      setIsLoading(false);
-    };
-    reader.onerror = () => {
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          setPreview(e.target?.result as string);
+          setIsLoading(false);
+        } catch (loadError) {
+          console.error('Error setting preview:', loadError);
+          setError(true);
+          setIsLoading(false);
+        }
+      };
+      reader.onerror = (error) => {
+        console.error('FileReader error:', error);
+        setError(true);
+        setIsLoading(false);
+      };
+      
+      // Validate file before reading
+      if (!file || !file.type || !file.type.startsWith('image/')) {
+        setError(true);
+        setIsLoading(false);
+        return;
+      }
+      
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error initializing FileReader:', error);
       setError(true);
       setIsLoading(false);
-    };
-    reader.readAsDataURL(file);
+    }
   }, [file]);
 
   const formatFileSize = (bytes: number) => {
