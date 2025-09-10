@@ -15,6 +15,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
   const [error, setError] = useState(false);
   const [objectURL, setObjectURL] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [forceReload, setForceReload] = useState(0);
 
   useEffect(() => {
     const loadPreview = async () => {
@@ -117,15 +118,13 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
                 } else {
                   console.error('FileReader returned invalid result:', result);
                   if (!previewLoaded) {
-                    setError(true);
-                    setIsLoading(false);
+                    tryDirectURL();
                   }
                 }
               } catch (loadError) {
                 console.error('Error setting preview:', loadError);
                 if (!previewLoaded) {
-                  setError(true);
-                  setIsLoading(false);
+                  tryDirectURL();
                 }
               }
             };
@@ -133,16 +132,14 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             reader.onerror = (error) => {
               console.error('FileReader error:', error);
               if (!previewLoaded) {
-                setError(true);
-                setIsLoading(false);
+                tryDirectURL();
               }
             };
 
             reader.onabort = () => {
               console.error('FileReader aborted');
               if (!previewLoaded) {
-                setError(true);
-                setIsLoading(false);
+                tryDirectURL();
               }
             };
 
@@ -151,8 +148,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
               if (!previewLoaded) {
                 console.error('FileReader timeout');
                 reader.abort();
-                setError(true);
-                setIsLoading(false);
+                tryDirectURL();
               }
             }, 5000);
 
@@ -164,6 +160,25 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             
           } catch (readerError) {
             console.error('FileReader initialization error:', readerError);
+            if (!previewLoaded) {
+              tryDirectURL();
+            }
+          }
+        }
+
+        function tryDirectURL() {
+          if (previewLoaded) return;
+          
+          try {
+            console.log('Trying direct URL.createObjectURL without image test...');
+            const url = URL.createObjectURL(file);
+            setObjectURL(url);
+            setPreview(url);
+            setIsLoading(false);
+            previewLoaded = true;
+            console.log('Direct URL success');
+          } catch (directError) {
+            console.error('Direct URL also failed:', directError);
             if (!previewLoaded) {
               setError(true);
               setIsLoading(false);
@@ -179,7 +194,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
     };
 
     loadPreview();
-  }, [file, retryCount]);
+  }, [file, forceReload]);
 
   // Cleanup object URL on unmount
   useEffect(() => {
@@ -189,6 +204,22 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
       }
     };
   }, [objectURL]);
+
+  // Retry function
+  const handleRetry = () => {
+    console.log('Retrying preview load...');
+    setRetryCount(prev => prev + 1);
+    setError(false);
+    setIsLoading(true);
+    setPreview(null);
+    // Clean up existing object URL
+    if (objectURL) {
+      URL.revokeObjectURL(objectURL);
+      setObjectURL(null);
+    }
+    // Force reload by updating forceReload
+    setForceReload(prev => prev + 1);
+  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -248,12 +279,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             </p>
             {retryCount < 2 && (
               <button
-                onClick={() => {
-                  setRetryCount(prev => prev + 1);
-                  setError(false);
-                  setIsLoading(true);
-                  // Trigger reload by updating a dependency
-                }}
+                onClick={handleRetry}
                 className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
               >
                 Retry preview
@@ -264,11 +290,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
         <div className="flex space-x-2">
           {retryCount < 2 && (
             <button
-              onClick={() => {
-                setRetryCount(prev => prev + 1);
-                setError(false);
-                setIsLoading(true);
-              }}
+              onClick={handleRetry}
               className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
               title="Retry preview"
             >
