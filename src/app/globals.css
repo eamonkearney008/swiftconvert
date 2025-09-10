@@ -259,3 +259,23 @@
     display: flex;
   }
 }
+
+/* Mobile slider improvements */
+@media (max-width: 768px) {
+  [data-slot="slider"] {
+    touch-action: pan-y;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  [data-slot="slider-thumb"] {
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Prevent horizontal scrolling on slider interaction */
+  [data-slot="slider"]:active {
+    overflow-x: hidden;
+  }
+}
