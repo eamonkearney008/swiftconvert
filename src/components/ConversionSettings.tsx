@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
+import { MobileSlider } from '@/components/ui/mobile-slider';
 import { PRESETS, getSuggestedFormat, getOptimalSettings, validateSettings } from '@/lib/presets';
 import { ConversionSettings, ImageFormat, PresetDefinition } from '@/types';
 
@@ -246,14 +247,28 @@ export function ConversionSettings({
                   <Label htmlFor="quality">
                     Quality: {customSettings.quality}%
                   </Label>
-                  <Slider
-                    value={[customSettings.quality || 85]}
-                    onValueChange={handleQualityChange}
-                    max={100}
-                    min={1}
-                    step={1}
-                    className="w-full"
-                  />
+                  {/* Use MobileSlider on mobile devices */}
+                  <div className="block md:hidden">
+                    <MobileSlider
+                      value={[customSettings.quality || 85]}
+                      onValueChange={handleQualityChange}
+                      max={100}
+                      min={1}
+                      step={1}
+                      className="w-full"
+                    />
+                  </div>
+                  {/* Use regular Slider on desktop */}
+                  <div className="hidden md:block">
+                    <Slider
+                      value={[customSettings.quality || 85]}
+                      onValueChange={handleQualityChange}
+                      max={100}
+                      min={1}
+                      step={1}
+                      className="w-full"
+                    />
+                  </div>
                   <div className="flex justify-between text-xs text-slate-500">
                     <span>Smallest file</span>
                     <span>Best quality</span>

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
+import { MobileSlider } from '@/components/ui/mobile-slider';
 import { 
   Settings, 
   Zap,
@@ -145,17 +146,34 @@ export function SimpleAdvancedSettings({
             </div>
             <div>
               <Label htmlFor="quality">Quality: {customSettings.quality}%</Label>
-              <Slider
-                value={[customSettings.quality]}
-                onValueChange={([value]) => handleCustomSettingsChange({
-                  ...customSettings,
-                  quality: value
-                })}
-                min={10}
-                max={100}
-                step={5}
-                className="mt-2"
-              />
+              {/* Use MobileSlider on mobile devices */}
+              <div className="block md:hidden mt-2">
+                <MobileSlider
+                  value={[customSettings.quality]}
+                  onValueChange={([value]) => handleCustomSettingsChange({
+                    ...customSettings,
+                    quality: value
+                  })}
+                  min={10}
+                  max={100}
+                  step={5}
+                  className="w-full"
+                />
+              </div>
+              {/* Use regular Slider on desktop */}
+              <div className="hidden md:block mt-2">
+                <Slider
+                  value={[customSettings.quality]}
+                  onValueChange={([value]) => handleCustomSettingsChange({
+                    ...customSettings,
+                    quality: value
+                  })}
+                  min={10}
+                  max={100}
+                  step={5}
+                  className="w-full"
+                />
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
