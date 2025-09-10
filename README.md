@@ -2,6 +2,8 @@
 
 A blazingly fast, privacy-first image converter that works in-browser by default (WASM) and seamlessly offloads to the edge for heavy jobs.
 
+<!-- Last updated: Mobile optimization for large file previews -->
+
 ## Features
 
 - **Privacy First**: All conversions happen in your browser. Your files never leave your device.
