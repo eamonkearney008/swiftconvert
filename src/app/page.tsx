@@ -10,6 +10,7 @@ import { FormatConverter } from '../lib/format-converters';
 import { getWorkerManager } from '../lib/worker-manager';
 import { getPerformanceMonitor } from '../lib/performance';
 import HeaderNavigation from '../components/HeaderNavigation';
+import { InContentAd } from '../components/AdSense';
 
 function HomeContent() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -520,6 +521,11 @@ function HomeContent() {
                 Process multiple files simultaneously with our powerful local processing engine.
               </motion.p>
             </motion.div>
+
+            {/* Ad Placement */}
+            <div className="flex justify-center mb-8">
+              <InContentAd />
+            </div>
 
             {/* File Upload */}
             <motion.div
