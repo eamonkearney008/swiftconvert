@@ -83,6 +83,7 @@ export const metadata: Metadata = {
     'msapplication-TileColor': '#3b82f6',
     'msapplication-config': '/browserconfig.xml',
     'theme-color': '#3b82f6',
+    'google-site-verification': '1olwrRwXEBJqc_EYyjiWXhVk_bJYEY_gSPFFAsKtBDU',
   },
 };
 
