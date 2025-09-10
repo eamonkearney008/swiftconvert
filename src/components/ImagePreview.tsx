@@ -13,40 +13,116 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
   const [preview, setPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [objectURL, setObjectURL] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          setPreview(e.target?.result as string);
+    const loadPreview = async () => {
+      try {
+        // Validate file before reading
+        if (!file || !file.name || file.size === undefined) {
+          console.error('Invalid file object:', file);
+          setError(true);
           setIsLoading(false);
-        } catch (loadError) {
-          console.error('Error setting preview:', loadError);
+          return;
+        }
+
+        // Check file type more thoroughly
+        const isValidImage = file.type && (
+          file.type.startsWith('image/') || 
+          /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(file.name)
+        );
+
+        if (!isValidImage) {
+          console.error('File is not a valid image:', file.name, file.type);
+          setError(true);
+          setIsLoading(false);
+          return;
+        }
+
+        // Check file size (max 50MB for preview)
+        if (file.size > 50 * 1024 * 1024) {
+          console.error('File too large for preview:', file.size);
+          setError(true);
+          setIsLoading(false);
+          return;
+        }
+
+        // Try FileReader first
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+          try {
+            const result = e.target?.result;
+            if (result && typeof result === 'string') {
+              setPreview(result);
+              setIsLoading(false);
+            } else {
+              console.error('FileReader returned invalid result:', result);
+              setError(true);
+              setIsLoading(false);
+            }
+          } catch (loadError) {
+            console.error('Error setting preview:', loadError);
+            setError(true);
+            setIsLoading(false);
+          }
+        };
+
+        reader.onerror = (error) => {
+          console.error('FileReader error:', error);
+          setError(true);
+          setIsLoading(false);
+        };
+
+        reader.onabort = () => {
+          console.error('FileReader aborted');
+          setError(true);
+          setIsLoading(false);
+        };
+
+        // Set timeout for FileReader
+        const timeout = setTimeout(() => {
+          console.error('FileReader timeout');
+          reader.abort();
+          setError(true);
+          setIsLoading(false);
+        }, 10000); // 10 second timeout
+
+        reader.onloadend = () => {
+          clearTimeout(timeout);
+        };
+
+        reader.readAsDataURL(file);
+
+      } catch (error) {
+        console.error('Error initializing FileReader:', error);
+        
+        // Fallback: try URL.createObjectURL
+        try {
+          console.log('Trying URL.createObjectURL fallback');
+          const url = URL.createObjectURL(file);
+          setObjectURL(url);
+          setPreview(url);
+          setIsLoading(false);
+        } catch (fallbackError) {
+          console.error('Fallback also failed:', fallbackError);
           setError(true);
           setIsLoading(false);
         }
-      };
-      reader.onerror = (error) => {
-        console.error('FileReader error:', error);
-        setError(true);
-        setIsLoading(false);
-      };
-      
-      // Validate file before reading
-      if (!file || !file.type || !file.type.startsWith('image/')) {
-        setError(true);
-        setIsLoading(false);
-        return;
       }
-      
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Error initializing FileReader:', error);
-      setError(true);
-      setIsLoading(false);
-    }
+    };
+
+    loadPreview();
   }, [file]);
+
+  // Cleanup object URL on unmount
+  useEffect(() => {
+    return () => {
+      if (objectURL) {
+        URL.revokeObjectURL(objectURL);
+      }
+    };
+  }, [objectURL]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -100,6 +176,9 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             </p>
             <p className="text-xs text-red-600 dark:text-red-400">
               Failed to load preview
+            </p>
+            <p className="text-xs text-red-500 dark:text-red-500 mt-1">
+              File will still be converted
             </p>
           </div>
         </div>
