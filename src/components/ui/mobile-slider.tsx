@@ -36,19 +36,11 @@ export function MobileSlider({
     e.preventDefault()
     e.stopPropagation()
     
-    // Aggressively prevent body scrolling
-    document.body.style.overflow = 'hidden'
-    document.body.style.touchAction = 'none'
-    document.body.style.position = 'fixed'
-    document.body.style.width = '100%'
-    document.body.style.height = '100%'
+    // Light touch prevention - only prevent horizontal scrolling
+    document.body.style.touchAction = 'pan-y'
     document.body.classList.add('touch-active')
     
-    // Prevent scrolling on html element too
-    document.documentElement.style.overflow = 'hidden'
-    document.documentElement.style.touchAction = 'none'
-    
-    // If tapping on the track (not dragging), jump to that position
+    // If tapping on the track, jump to that position
     const sliderRect = sliderRef.current?.getBoundingClientRect()
     if (sliderRect) {
       const touchX = e.touches[0].clientX
@@ -101,16 +93,8 @@ export function MobileSlider({
     e.stopPropagation()
     
     // Restore body scrolling
-    document.body.style.overflow = ''
     document.body.style.touchAction = ''
-    document.body.style.position = ''
-    document.body.style.width = ''
-    document.body.style.height = ''
     document.body.classList.remove('touch-active')
-    
-    // Restore html element
-    document.documentElement.style.overflow = ''
-    document.documentElement.style.touchAction = ''
     
     setIsDragging(false)
   }, [isDragging])
@@ -187,14 +171,8 @@ export function MobileSlider({
   // Cleanup on unmount
   React.useEffect(() => {
     return () => {
-      document.body.style.overflow = ''
       document.body.style.touchAction = ''
-      document.body.style.position = ''
-      document.body.style.width = ''
-      document.body.style.height = ''
       document.body.classList.remove('touch-active')
-      document.documentElement.style.overflow = ''
-      document.documentElement.style.touchAction = ''
     }
   }, [])
 
@@ -221,7 +199,7 @@ export function MobileSlider({
       {...props}
     >
       {/* Track */}
-      <div className="relative h-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+      <div className="relative h-4 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
         {/* Range */}
         <div
           className="absolute h-full bg-blue-600 dark:bg-blue-500 rounded-full"
@@ -232,20 +210,20 @@ export function MobileSlider({
       {/* Thumb */}
       <div
         className={cn(
-          "absolute bg-white dark:bg-slate-100 border-2 border-blue-600 dark:border-blue-500 rounded-full shadow-sm transition-all duration-150",
-          isDragging && "shadow-xl ring-4 ring-blue-200 dark:ring-blue-800 scale-110",
+          "absolute bg-white dark:bg-slate-100 border-2 border-blue-600 dark:border-blue-500 rounded-full shadow-lg transition-all duration-100",
+          isDragging && "shadow-2xl ring-4 ring-blue-200 dark:ring-blue-800 scale-125",
           "touch-manipulation cursor-pointer"
         )}
         style={{
-          left: `calc(${percentage}% - 20px)`,
-          top: '-18px',
-          width: '40px',
-          height: '40px',
+          left: `calc(${percentage}% - 25px)`,
+          top: '-23px',
+          width: '50px',
+          height: '50px',
           touchAction: 'none',
-          minWidth: '44px',
-          minHeight: '44px',
-          marginLeft: '-22px',
-          marginTop: '-22px'
+          minWidth: '50px',
+          minHeight: '50px',
+          marginLeft: '-25px',
+          marginTop: '-25px'
         }}
       />
     </div>

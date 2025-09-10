@@ -297,14 +297,9 @@ html, body {
     -webkit-touch-callout: none !important;
   }
   
-  /* Aggressive body lock during any touch interaction */
-  body.slider-active,
+  /* Light touch prevention during slider interaction */
   body.touch-active {
-    overflow: hidden !important;
-    touch-action: none !important;
-    position: fixed !important;
-    width: 100% !important;
-    height: 100% !important;
+    touch-action: pan-y !important;
   }
   
   /* Prevent horizontal scrolling on any element */
