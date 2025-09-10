@@ -34,6 +34,9 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
         }
 
         console.log('Loading preview for file:', file.name, 'Type:', file.type, 'Size:', file.size);
+        console.log('File constructor:', file.constructor.name);
+        console.log('File instanceof File:', file instanceof File);
+        console.log('File instanceof Blob:', file instanceof Blob);
 
         // Check file type more thoroughly
         const isValidImage = file.type && (
@@ -62,19 +65,32 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
         // Approach 1: URL.createObjectURL (most reliable on mobile)
         try {
           console.log('Trying URL.createObjectURL...');
+          console.log('File before URL.createObjectURL:', {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified
+          });
+          
           const url = URL.createObjectURL(file);
+          console.log('URL created:', url);
           setObjectURL(url);
           
           // Test if the URL works by creating an image
           const testImg = new Image();
           testImg.onload = () => {
-            console.log('URL.createObjectURL success');
+            console.log('URL.createObjectURL success - image loaded');
             setPreview(url);
             setIsLoading(false);
             previewLoaded = true;
           };
-          testImg.onerror = () => {
-            console.log('URL.createObjectURL failed, trying FileReader...');
+          testImg.onerror = (error) => {
+            console.log('URL.createObjectURL failed - image error:', error);
+            console.log('Image error details:', {
+              src: testImg.src,
+              naturalWidth: testImg.naturalWidth,
+              naturalHeight: testImg.naturalHeight
+            });
             URL.revokeObjectURL(url);
             setObjectURL(null);
             
@@ -105,16 +121,39 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           
           try {
             console.log('Trying FileReader...');
+            console.log('File for FileReader:', {
+              name: file.name,
+              type: file.type,
+              size: file.size
+            });
+            
             const reader = new FileReader();
             
             reader.onload = (e) => {
               try {
                 const result = e.target?.result;
+                console.log('FileReader result type:', typeof result);
+                console.log('FileReader result length:', result ? result.length : 'null');
+                console.log('FileReader result starts with data:', result ? result.startsWith('data:') : false);
+                
                 if (result && typeof result === 'string' && result.startsWith('data:')) {
-                  console.log('FileReader success');
-                  setPreview(result);
-                  setIsLoading(false);
-                  previewLoaded = true;
+                  console.log('FileReader success - data URL created');
+                  
+                  // Test if data URL works with Image
+                  const testImg = new Image();
+                  testImg.onload = () => {
+                    console.log('Data URL image loaded successfully');
+                    setPreview(result);
+                    setIsLoading(false);
+                    previewLoaded = true;
+                  };
+                  testImg.onerror = (error) => {
+                    console.log('Data URL image failed to load:', error);
+                    if (!previewLoaded) {
+                      tryDirectURL();
+                    }
+                  };
+                  testImg.src = result;
                 } else {
                   console.error('FileReader returned invalid result:', result);
                   if (!previewLoaded) {
@@ -176,7 +215,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             setPreview(url);
             setIsLoading(false);
             previewLoaded = true;
-            console.log('Direct URL success');
+            console.log('Direct URL success - setting preview without image test');
           } catch (directError) {
             console.error('Direct URL also failed:', directError);
             if (!previewLoaded) {
