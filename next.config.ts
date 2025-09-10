@@ -12,6 +12,20 @@ const nextConfig: NextConfig = {
   // Configure headers for cross-origin isolation (required for WASM threads)
   async headers() {
     return [
+      // Sitemap headers
+      {
+        source: '/sitemap.xml',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/xml',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400',
+          },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [
