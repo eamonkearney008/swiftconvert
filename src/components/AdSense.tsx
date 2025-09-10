@@ -26,17 +26,17 @@ export default function AdSense({
         // Wait for AdSense script to load
         const initAdSense = () => {
           if ((window as any).adsbygoogle) {
-            console.log('AdSense: Script loaded, pushing ad');
+            console.log('AdSense: Script loaded, pushing ad for slot', adSlot);
             ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
           } else {
-            console.log('AdSense: Script not loaded yet, retrying...');
-            // Retry after a short delay if AdSense script isn't loaded yet
-            setTimeout(initAdSense, 100);
+            console.log('AdSense: Script not loaded yet, retrying in 500ms...');
+            // Retry after a longer delay if AdSense script isn't loaded yet
+            setTimeout(initAdSense, 500);
           }
         };
         
-        // Start initialization
-        initAdSense();
+        // Start initialization after a short delay to ensure script is loaded
+        setTimeout(initAdSense, 1000);
       }
     } catch (error) {
       console.error('AdSense error:', error);
