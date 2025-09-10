@@ -22,6 +22,8 @@ export default function AdSense({
       // Initialize AdSense after component mounts
       if (typeof window !== 'undefined') {
         console.log('AdSense: Initializing ad slot', adSlot);
+        console.log('AdSense: Window object available:', !!window);
+        console.log('AdSense: adsbygoogle available:', !!(window as any).adsbygoogle);
         
         // Wait for AdSense script to load
         const initAdSense = () => {
@@ -30,11 +32,20 @@ export default function AdSense({
             try {
               ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
               console.log('AdSense: Ad pushed successfully for slot', adSlot);
+              
+              // Check if ad element exists
+              const adElement = document.querySelector(`[data-ad-slot="${adSlot}"]`);
+              console.log('AdSense: Ad element found:', !!adElement);
+              if (adElement) {
+                console.log('AdSense: Ad element classes:', adElement.className);
+                console.log('AdSense: Ad element style:', adElement.getAttribute('style'));
+              }
             } catch (pushError) {
               console.error('AdSense: Error pushing ad:', pushError);
             }
           } else {
             console.log('AdSense: Script not loaded yet, retrying in 1000ms...');
+            console.log('AdSense: Current adsbygoogle:', (window as any).adsbygoogle);
             // Retry after a longer delay if AdSense script isn't loaded yet
             setTimeout(initAdSense, 1000);
           }
@@ -49,7 +60,7 @@ export default function AdSense({
   }, [adSlot]);
 
   return (
-    <div className={`adsense-container ${className}`}>
+    <div className={`adsense-container ${className}`} style={{ border: '1px dashed #ccc', minHeight: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <ins
         className="adsbygoogle"
         style={adStyle}
@@ -58,6 +69,9 @@ export default function AdSense({
         data-ad-format={adFormat}
         data-full-width-responsive={responsive ? 'true' : 'false'}
       />
+      <div style={{ position: 'absolute', fontSize: '12px', color: '#666', background: 'rgba(255,255,255,0.8)', padding: '2px 4px', borderRadius: '2px' }}>
+        AdSense Slot: {adSlot}
+      </div>
     </div>
   );
 }
