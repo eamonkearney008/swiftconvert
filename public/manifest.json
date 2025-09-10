@@ -1,6 +1,6 @@
 {
-  "name": "SnapConvert - Image Converter",
-  "short_name": "SnapConvert",
+  "name": "SnapCovert - Image Converter",
+  "short_name": "SnapCovert",
   "description": "A blazingly fast, privacy-first image converter that works in-browser",
   "start_url": "/",
   "display": "standalone",

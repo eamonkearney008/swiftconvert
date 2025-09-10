@@ -1,4 +1,4 @@
-# SnapConvert
+# SnapCovert
 
 A blazingly fast, privacy-first image converter that works in-browser by default (WASM) and seamlessly offloads to the edge for heavy jobs.
 
@@ -32,7 +32,7 @@ A blazingly fast, privacy-first image converter that works in-browser by default
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd snapconvert
+cd snapcovert
 ```
 
 2. Install dependencies:
