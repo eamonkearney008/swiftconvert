@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { SimpleMobileSlider } from '@/components/ui/simple-mobile-slider';
+import { RangeSlider } from '@/components/ui/range-slider';
 import { 
   Settings, 
   Zap,
@@ -146,9 +146,9 @@ export function SimpleAdvancedSettings({
             </div>
             <div>
               <Label htmlFor="quality">Quality: {customSettings.quality}%</Label>
-              {/* Use SimpleMobileSlider on mobile devices */}
+              {/* Use RangeSlider on mobile devices */}
               <div className="block md:hidden mt-2">
-                <SimpleMobileSlider
+                <RangeSlider
                   value={[customSettings.quality]}
                   onValueChange={([value]) => handleCustomSettingsChange({
                     ...customSettings,

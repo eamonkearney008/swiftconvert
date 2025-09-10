@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { SimpleMobileSlider } from '@/components/ui/simple-mobile-slider';
+import { RangeSlider } from '@/components/ui/range-slider';
 import { PRESETS, getSuggestedFormat, getOptimalSettings, validateSettings } from '@/lib/presets';
 import { ConversionSettings, ImageFormat, PresetDefinition } from '@/types';
 
@@ -247,9 +247,9 @@ export function ConversionSettings({
                   <Label htmlFor="quality">
                     Quality: {customSettings.quality}%
                   </Label>
-                  {/* Use SimpleMobileSlider on mobile devices */}
+                  {/* Use RangeSlider on mobile devices */}
                   <div className="block md:hidden">
-                    <SimpleMobileSlider
+                    <RangeSlider
                       value={[customSettings.quality || 85]}
                       onValueChange={handleQualityChange}
                       max={100}
