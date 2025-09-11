@@ -256,9 +256,12 @@ function HomeContent() {
       
       if (conversionMethod === 'local') {
         // Local processing with batch optimization
-        // For large files, process one at a time to avoid memory issues
+        // For large files or mobile, process one at a time to avoid memory issues
+        const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
         const hasLargeFiles = selectedFiles.some(file => file.size > 10 * 1024 * 1024);
-        const batchSize = hasLargeFiles ? 1 : Math.min(3, selectedFiles.length);
+        const batchSize = (hasLargeFiles || isMobile) ? 1 : Math.min(3, selectedFiles.length);
+        
+        console.log(`Batch processing: mobile=${isMobile}, largeFiles=${hasLargeFiles}, batchSize=${batchSize}`);
         const batches = [];
         
         for (let i = 0; i < selectedFiles.length; i += batchSize) {
@@ -343,8 +346,12 @@ function HomeContent() {
       return new Promise((resolve, reject) => {
         const processConversion = async () => {
           try {
-            // Add timeout for large files
-            const timeoutMs = fileSizeMB > 10 ? 60000 : 30000; // 60s for >10MB, 30s for smaller
+            // Add timeout for large files - longer on mobile
+            const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+            const baseTimeout = isMobile ? 45000 : 30000; // 45s base on mobile, 30s on desktop
+            const timeoutMs = fileSizeMB > 10 ? (baseTimeout * 2) : baseTimeout;
+            
+            console.log(`Conversion timeout: ${timeoutMs}ms (mobile: ${isMobile}, fileSize: ${fileSizeMB}MB)`);
             
             const conversionPromise = FormatConverter.convertToFormat(file, settings.format, settings.quality);
             const timeoutPromise = new Promise((_, timeoutReject) => {

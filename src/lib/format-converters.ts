@@ -198,20 +198,36 @@ export class FormatConverter {
    * Convert image to any supported format with performance optimizations
    */
   static async convertToFormat(file: File, format: string, quality: number = 85): Promise<ConversionResult> {
-    switch (format.toLowerCase()) {
-      case 'heic':
-        return this.convertToHEIC(file, quality);
-      case 'tiff':
-        return this.convertToTIFF(file);
-      case 'gif':
-        return this.convertToGIF(file, quality);
-      case 'bmp':
-        return this.convertToBMP(file);
-      case 'ico':
-        return this.convertToICO(file);
-      default:
-        // For native formats (webp, avif, png, jpg), use optimized canvas conversion
-        return this.convertWithOptimizedCanvas(file, format, quality);
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    
+    try {
+      switch (format.toLowerCase()) {
+        case 'heic':
+          return this.convertToHEIC(file, quality);
+        case 'tiff':
+          return this.convertToTIFF(file);
+        case 'gif':
+          return this.convertToGIF(file, quality);
+        case 'bmp':
+          return this.convertToBMP(file);
+        case 'ico':
+          return this.convertToICO(file);
+        default:
+          // For native formats (webp, avif, png, jpg), use optimized canvas conversion
+          return this.convertWithOptimizedCanvas(file, format, quality);
+      }
+    } catch (error) {
+      // On mobile, if conversion fails, try a fallback approach
+      if (isMobile && (format === 'webp' || format === 'avif')) {
+        console.log(`Mobile conversion failed for ${format}, trying JPEG fallback...`);
+        try {
+          return this.convertWithOptimizedCanvas(file, 'jpg', quality);
+        } catch (fallbackError) {
+          console.error('Mobile fallback conversion also failed:', fallbackError);
+          throw new Error(`Mobile conversion failed for ${format}. Try using JPEG format instead.`);
+        }
+      }
+      throw error;
     }
   }
 
@@ -221,8 +237,14 @@ export class FormatConverter {
   private static async convertWithOptimizedCanvas(file: File, format: string, quality: number): Promise<ConversionResult> {
     console.log(`Starting conversion: ${file.name} (${file.size} bytes) to ${format} with quality ${quality}`);
     
-    // Use OffscreenCanvas if available for better performance
-    const canvas = typeof OffscreenCanvas !== 'undefined' 
+    // Check if we're on mobile and avoid OffscreenCanvas (can cause issues on some mobile browsers)
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const useOffscreenCanvas = !isMobile && typeof OffscreenCanvas !== 'undefined';
+    
+    console.log(`Mobile: ${isMobile}, Using OffscreenCanvas: ${useOffscreenCanvas}`);
+    
+    // Use regular canvas on mobile for better compatibility
+    const canvas = useOffscreenCanvas 
       ? new OffscreenCanvas(1, 1) 
       : document.createElement('canvas');
     
@@ -289,7 +311,14 @@ export class FormatConverter {
                 reject(new Error(`Conversion failed: ${error.message}`));
               });
           } else {
+            // For mobile, add timeout and better error handling
+            const timeout = setTimeout(() => {
+              console.error('Canvas.toBlob timeout on mobile');
+              reject(new Error(`Conversion timeout - mobile canvas processing took too long`));
+            }, isMobile ? 30000 : 15000); // Longer timeout on mobile
+            
             (canvas as HTMLCanvasElement).toBlob((blob) => {
+              clearTimeout(timeout);
               if (blob) {
                 console.log(`Conversion successful: ${blob.size} bytes`);
                 resolve({ blob, actualFormat: format });
@@ -307,7 +336,11 @@ export class FormatConverter {
       
       img.onerror = (error) => {
         console.error('Image load error:', error);
-        reject(new Error('Failed to load image'));
+        // On mobile, try to provide more specific error information
+        const errorMsg = isMobile 
+          ? 'Failed to load image on mobile - may be due to memory constraints or unsupported format'
+          : 'Failed to load image';
+        reject(new Error(errorMsg));
       };
       
       // Load image directly
