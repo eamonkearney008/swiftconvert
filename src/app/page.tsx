@@ -10,7 +10,6 @@ import { FormatConverter } from '../lib/format-converters';
 import { getPerformanceMonitor } from '../lib/performance';
 import HeaderNavigation from '../components/HeaderNavigation';
 import { InContentAd } from '../components/AdSense';
-import TestPNGPreview from '../components/TestPNGPreview';
 
 function HomeContent() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -573,10 +572,6 @@ function HomeContent() {
               <InContentAd />
             </div>
 
-            {/* Test PNG Preview Component - Temporary */}
-            <div className="mb-8">
-              <TestPNGPreview />
-            </div>
 
             {/* File Upload */}
             <motion.div
