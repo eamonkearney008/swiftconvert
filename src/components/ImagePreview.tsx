@@ -53,7 +53,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
 
         // Check file size - increased limits for better support
         const isMobile = window.innerWidth <= 768;
-        const maxSize = isMobile ? 5 * 1024 * 1024 : 50 * 1024 * 1024; // 5MB on mobile, 50MB on desktop
+        const maxSize = isMobile ? 20 * 1024 * 1024 : 100 * 1024 * 1024; // 20MB on mobile, 100MB on desktop
         
         if (file.size > maxSize) {
           console.error(`File too large for preview: ${file.size} bytes (max: ${maxSize} bytes on ${isMobile ? 'mobile' : 'desktop'})`);
@@ -66,7 +66,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
 
         // For mobile and large files, try to resize first
         let fileToUse = file;
-        if (isMobile && file.size > 2 * 1024 * 1024) { // 2MB threshold for resizing
+        if (isMobile && file.size > 5 * 1024 * 1024) { // 5MB threshold for resizing on mobile
           try {
             console.log('Large file on mobile - attempting to resize for preview...');
             fileToUse = await resizeImageForMobile(file);
@@ -76,170 +76,48 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           }
         }
 
-        // Try multiple approaches in sequence
-        let previewLoaded = false;
-
-        // Approach 1: URL.createObjectURL (most reliable on mobile)
+        // Simplified mobile-friendly preview loading
         try {
-          console.log('Trying URL.createObjectURL...');
-          console.log('File before URL.createObjectURL:', {
-            name: fileToUse.name,
-            type: fileToUse.type,
-            size: fileToUse.size,
-            lastModified: fileToUse.lastModified
-          });
+          console.log('Loading preview for:', fileToUse.name, fileToUse.size, 'bytes');
           
+          // Use URL.createObjectURL - most reliable on mobile
           const url = URL.createObjectURL(fileToUse);
-          console.log('URL created:', url);
           setObjectURL(url);
           
-          // Test if the URL works by creating an image
-          const testImg = new Image();
-          testImg.onload = () => {
-            console.log('URL.createObjectURL success - image loaded');
-            setPreview(url);
-            setIsLoading(false);
-            previewLoaded = true;
-          };
-          testImg.onerror = (error) => {
-            console.log('URL.createObjectURL failed - image error:', error);
-            console.log('Image error details:', {
-              src: testImg.src,
-              naturalWidth: testImg.naturalWidth,
-              naturalHeight: testImg.naturalHeight
-            });
+          // Create image to test if it loads
+          const img = new Image();
+          
+          // Set timeout for mobile
+          const timeout = setTimeout(() => {
+            console.error('Preview load timeout');
             URL.revokeObjectURL(url);
             setObjectURL(null);
-            
-            // Approach 2: FileReader
-            if (!previewLoaded) {
-              tryFileReader();
-            }
-          };
-          testImg.src = url;
+            setError(true);
+            setIsLoading(false);
+          }, isMobile ? 10000 : 5000); // Longer timeout on mobile
           
-          // Timeout for image test
-          setTimeout(() => {
-            if (!previewLoaded) {
-              console.log('URL.createObjectURL timeout, trying FileReader...');
-              URL.revokeObjectURL(url);
-              setObjectURL(null);
-              tryFileReader();
-            }
-          }, 3000);
-          
-        } catch (urlError) {
-          console.error('URL.createObjectURL error:', urlError);
-          tryFileReader();
-        }
-
-        function tryFileReader() {
-          if (previewLoaded) return;
-          
-          try {
-            console.log('Trying FileReader...');
-            console.log('File for FileReader:', {
-              name: fileToUse.name,
-              type: fileToUse.type,
-              size: fileToUse.size
-            });
-            
-            const reader = new FileReader();
-            
-            reader.onload = (e) => {
-              try {
-                const result = e.target?.result;
-                console.log('FileReader result type:', typeof result);
-                console.log('FileReader result length:', result ? result.length : 'null');
-                console.log('FileReader result starts with data:', result ? result.startsWith('data:') : false);
-                
-                if (result && typeof result === 'string' && result.startsWith('data:')) {
-                  console.log('FileReader success - data URL created');
-                  
-                  // Test if data URL works with Image
-                  const testImg = new Image();
-                  testImg.onload = () => {
-                    console.log('Data URL image loaded successfully');
-                    setPreview(result);
-                    setIsLoading(false);
-                    previewLoaded = true;
-                  };
-                  testImg.onerror = (error) => {
-                    console.log('Data URL image failed to load:', error);
-                    if (!previewLoaded) {
-                      tryDirectURL();
-                    }
-                  };
-                  testImg.src = result;
-                } else {
-                  console.error('FileReader returned invalid result:', result);
-                  if (!previewLoaded) {
-                    tryDirectURL();
-                  }
-                }
-              } catch (loadError) {
-                console.error('Error setting preview:', loadError);
-                if (!previewLoaded) {
-                  tryDirectURL();
-                }
-              }
-            };
-
-            reader.onerror = (error) => {
-              console.error('FileReader error:', error);
-              if (!previewLoaded) {
-                tryDirectURL();
-              }
-            };
-
-            reader.onabort = () => {
-              console.error('FileReader aborted');
-              if (!previewLoaded) {
-                tryDirectURL();
-              }
-            };
-
-            // Set timeout for FileReader
-            const timeout = setTimeout(() => {
-              if (!previewLoaded) {
-                console.error('FileReader timeout');
-                reader.abort();
-                tryDirectURL();
-              }
-            }, 5000);
-
-            reader.onloadend = () => {
-              clearTimeout(timeout);
-            };
-
-            reader.readAsDataURL(fileToUse);
-            
-          } catch (readerError) {
-            console.error('FileReader initialization error:', readerError);
-            if (!previewLoaded) {
-              tryDirectURL();
-            }
-          }
-        }
-
-        function tryDirectURL() {
-          if (previewLoaded) return;
-          
-          try {
-            console.log('Trying direct URL.createObjectURL without image test...');
-            const url = URL.createObjectURL(fileToUse);
-            setObjectURL(url);
+          img.onload = () => {
+            clearTimeout(timeout);
+            console.log('Preview loaded successfully:', img.width, 'x', img.height);
             setPreview(url);
             setIsLoading(false);
-            previewLoaded = true;
-            console.log('Direct URL success - setting preview without image test');
-          } catch (directError) {
-            console.error('Direct URL also failed:', directError);
-            if (!previewLoaded) {
-              setError(true);
-              setIsLoading(false);
-            }
-          }
+          };
+          
+          img.onerror = (error) => {
+            clearTimeout(timeout);
+            console.error('Preview failed to load:', error);
+            URL.revokeObjectURL(url);
+            setObjectURL(null);
+            setError(true);
+            setIsLoading(false);
+          };
+          
+          img.src = url;
+          
+        } catch (error) {
+          console.error('Preview loading error:', error);
+          setError(true);
+          setIsLoading(false);
         }
 
       } catch (error) {
@@ -325,6 +203,11 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
     }
     // Force reload by updating forceReload
     setForceReload(prev => prev + 1);
+    
+    // Add a small delay for mobile to ensure cleanup
+    setTimeout(() => {
+      setForceReload(prev => prev + 1);
+    }, 100);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -380,10 +263,10 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             <p className="text-xs text-red-600 dark:text-red-400">
               Failed to load preview
             </p>
-            <p className="text-xs text-red-500 dark:text-red-500 mt-1">
-              File will still be converted
+            <p className="text-xs text-green-600 dark:text-green-400 mt-1 font-medium">
+              ✅ File will still be converted successfully
             </p>
-            {file.size > 5 * 1024 * 1024 && (
+            {file.size > 10 * 1024 * 1024 && (
               <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
                 Large file ({Math.round(file.size / 1024 / 1024)}MB) - preview may be slow
               </p>
