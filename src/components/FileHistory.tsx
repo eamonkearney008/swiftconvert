@@ -341,16 +341,20 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     {getStatusIcon(entry.status)}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{entry.originalFile.name}</p>
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <span>{formatDate(entry.timestamp)}</span>
-                        <span>•</span>
-                        <span>{formatFileSize(entry.originalFile.size)}</span>
-                        <span>→</span>
-                        <span>{formatFileSize(entry.result.compressedSize)}</span>
-                        <span>•</span>
-                        <Badge className={getStatusColor(entry.status)}>
-                          {entry.status}
-                        </Badge>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-slate-500">
+                        <div className="flex items-center gap-2">
+                          <span>{formatDate(entry.timestamp)}</span>
+                          <span className="hidden sm:inline">•</span>
+                          <span>{formatFileSize(entry.originalFile.size)}</span>
+                          <span>→</span>
+                          <span>{formatFileSize(entry.result.compressedSize)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="hidden sm:inline">•</span>
+                          <Badge className={getStatusColor(entry.status)}>
+                            {entry.status}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -396,16 +400,20 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     {getStatusIcon(entry.status)}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">Batch {entry.id.slice(-8)}</p>
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <span>{formatDate(entry.timestamp)}</span>
-                        <span>•</span>
-                        <span>{entry.completedFiles}/{entry.totalFiles} files</span>
-                        <span>•</span>
-                        <span>{Math.round(entry.averageCompressionRatio)}% compression</span>
-                        <span>•</span>
-                        <Badge className={getStatusColor(entry.status)}>
-                          {entry.status}
-                        </Badge>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-slate-500">
+                        <div className="flex items-center gap-2">
+                          <span>{formatDate(entry.timestamp)}</span>
+                          <span className="hidden sm:inline">•</span>
+                          <span>{entry.completedFiles}/{entry.totalFiles} files</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="hidden sm:inline">•</span>
+                          <span>{Math.round(entry.averageCompressionRatio)}% compression</span>
+                          <span className="hidden sm:inline">•</span>
+                          <Badge className={getStatusColor(entry.status)}>
+                            {entry.status}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                   </div>
