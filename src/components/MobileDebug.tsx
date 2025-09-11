@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 export default function MobileDebug() {
   const [debugInfo, setDebugInfo] = useState<any>({});
   const [isVisible, setIsVisible] = useState(false);
+  const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
 
   useEffect(() => {
     const info = {
@@ -41,6 +42,32 @@ export default function MobileDebug() {
     };
     
     setDebugInfo(info);
+    
+    // Capture console logs
+    const originalLog = console.log;
+    const originalError = console.error;
+    const originalWarn = console.warn;
+    
+    console.log = (...args) => {
+      originalLog(...args);
+      setConsoleLogs(prev => [...prev.slice(-9), `LOG: ${args.join(' ')}`]);
+    };
+    
+    console.error = (...args) => {
+      originalError(...args);
+      setConsoleLogs(prev => [...prev.slice(-9), `ERROR: ${args.join(' ')}`]);
+    };
+    
+    console.warn = (...args) => {
+      originalWarn(...args);
+      setConsoleLogs(prev => [...prev.slice(-9), `WARN: ${args.join(' ')}`]);
+    };
+    
+    return () => {
+      console.log = originalLog;
+      console.error = originalError;
+      console.warn = originalWarn;
+    };
   }, []);
 
   if (!isVisible) {
@@ -78,6 +105,19 @@ export default function MobileDebug() {
           ))}
         </div>
         
+        {consoleLogs.length > 0 && (
+          <div className="mt-4 pt-4 border-t">
+            <h4 className="font-medium mb-2">Recent Console Logs:</h4>
+            <div className="bg-gray-100 p-2 rounded text-xs max-h-32 overflow-y-auto">
+              {consoleLogs.map((log, index) => (
+                <div key={index} className={log.startsWith('ERROR') ? 'text-red-600' : log.startsWith('WARN') ? 'text-yellow-600' : 'text-gray-700'}>
+                  {log}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
         <div className="mt-4 pt-4 border-t space-y-2">
           <button
             onClick={() => {
@@ -85,7 +125,7 @@ export default function MobileDebug() {
               const url = URL.createObjectURL(testFile);
               console.log('URL.createObjectURL test:', url);
               URL.revokeObjectURL(url);
-              alert('Check console for URL.createObjectURL test result');
+              alert(`URL.createObjectURL test: ${url ? 'SUCCESS' : 'FAILED'}\nCheck console for details`);
             }}
             className="w-full bg-blue-500 text-white py-2 rounded text-sm"
           >
@@ -107,10 +147,10 @@ export default function MobileDebug() {
                 canvas.toBlob((blob) => {
                   if (blob) {
                     console.log('Canvas toBlob test successful:', blob.size, 'bytes');
-                    alert('Canvas toBlob test successful! Check console.');
+                    alert(`Canvas toBlob test: SUCCESS (${blob.size} bytes)\nCheck console for details`);
                   } else {
                     console.error('Canvas toBlob test failed');
-                    alert('Canvas toBlob test failed!');
+                    alert('Canvas toBlob test: FAILED\nCheck console for details');
                   }
                 }, 'image/png');
               } else {
@@ -136,12 +176,12 @@ export default function MobileDebug() {
                   img.onload = () => {
                     console.log('Image loaded successfully:', img.width, 'x', img.height);
                     URL.revokeObjectURL(url);
-                    alert('Image loaded successfully! Check console.');
+                    alert(`Image loaded: SUCCESS (${img.width}x${img.height})\nCheck console for details`);
                   };
                   img.onerror = (error) => {
                     console.error('Image load failed:', error);
                     URL.revokeObjectURL(url);
-                    alert('Image load failed! Check console.');
+                    alert('Image load: FAILED\nCheck console for details');
                   };
                   img.src = url;
                 }
