@@ -116,21 +116,11 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
     loadPreview();
   }, [file, forceReload]);
 
-  // Cleanup object URL on unmount and aggressive memory management
+  // Cleanup object URL on unmount
   useEffect(() => {
     return () => {
       if (objectURL) {
         URL.revokeObjectURL(objectURL);
-      }
-      // Force garbage collection hint on mobile
-      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-        // Clear any cached images
-        const images = document.querySelectorAll('img');
-        images.forEach(img => {
-          if (img.src.startsWith('blob:')) {
-            img.src = '';
-          }
-        });
       }
     };
   }, [objectURL]);

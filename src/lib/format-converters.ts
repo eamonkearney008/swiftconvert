@@ -239,9 +239,9 @@ export class FormatConverter {
     const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
     const useOffscreenCanvas = !isMobile && typeof OffscreenCanvas !== 'undefined';
     
-    // Aggressive memory management for mobile
+    // Light memory management for mobile
     if (isMobile) {
-      // Clear any existing object URLs
+      // Force garbage collection hint (but preserve previews)
       if ((window as any).gc) {
         (window as any).gc();
       }

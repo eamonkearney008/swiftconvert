@@ -117,14 +117,10 @@ function HomeContent() {
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      // Aggressive memory cleanup on mobile before processing new files
+      // Light memory cleanup on mobile before processing new files
       const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
       if (isMobile) {
-        // Clear any existing object URLs
-        selectedFiles.forEach(file => {
-          // This will trigger cleanup in ImagePreview components
-        });
-        // Force garbage collection hint
+        // Force garbage collection hint (but don't clear existing previews)
         if ((window as any).gc) {
           (window as any).gc();
         }
@@ -274,19 +270,13 @@ function HomeContent() {
         const hasLargeFiles = selectedFiles.some(file => file.size > 10 * 1024 * 1024);
         const batchSize = (hasLargeFiles || isMobile) ? 1 : Math.min(3, selectedFiles.length);
         
-        // Aggressive memory cleanup before starting conversion
+        // Selective memory cleanup before starting conversion (preserve previews)
         if (isMobile) {
-          // Clear any existing object URLs
+          // Clear any existing object URLs (but not preview images)
           if ((window as any).gc) {
             (window as any).gc();
           }
-          // Clear any cached images
-          const images = document.querySelectorAll('img');
-          images.forEach(img => {
-            if (img.src.startsWith('blob:')) {
-              img.src = '';
-            }
-          });
+          // Don't clear preview images - they should stay visible during conversion
         }
         
         const batches = [];
@@ -312,20 +302,20 @@ function HomeContent() {
             setConversionResults(prev => [...prev, result]);
             results.push(result);
             
-            // Aggressive memory cleanup after each file on mobile
+            // Light memory cleanup after each file on mobile
             if (isMobile) {
               // Force garbage collection hint
               if ((window as any).gc) {
                 (window as any).gc();
               }
               // Small delay to allow cleanup
-              await new Promise(resolve => setTimeout(resolve, 100));
+              await new Promise(resolve => setTimeout(resolve, 50));
             }
           }
           
-          // Longer delay between batches for memory cleanup
+          // Light delay between batches for memory cleanup
           if (batchIndex < batches.length - 1) {
-            const delay = isMobile ? 500 : (hasLargeFiles ? 200 : 50);
+            const delay = isMobile ? 200 : (hasLargeFiles ? 100 : 50);
             await new Promise(resolve => setTimeout(resolve, delay));
           }
         }
