@@ -10,6 +10,7 @@ import { FormatConverter } from '../lib/format-converters';
 import { getPerformanceMonitor } from '../lib/performance';
 import HeaderNavigation from '../components/HeaderNavigation';
 import { InContentAd } from '../components/AdSense';
+import MobileDebug from '../components/MobileDebug';
 
 function HomeContent() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -338,6 +339,14 @@ function HomeContent() {
     try {
       // Check file size and warn for very large files
       const fileSizeMB = file.size / (1024 * 1024);
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+      
+      console.log('=== MOBILE CONVERSION DEBUG ===');
+      console.log('Converting file:', file.name, 'Size:', fileSizeMB.toFixed(1), 'MB');
+      console.log('Is Mobile:', isMobile);
+      console.log('Format:', settings.format, 'Quality:', settings.quality);
+      console.log('===============================');
+      
       if (fileSizeMB > 20) {
         console.warn(`Large file detected: ${fileSizeMB.toFixed(1)}MB - conversion may take longer`);
       }
@@ -1344,6 +1353,9 @@ function HomeContent() {
           </motion.div>
         )}
       </main>
+      
+      {/* Mobile Debug Component */}
+      <MobileDebug />
     </div>
   );
 }

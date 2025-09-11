@@ -33,10 +33,19 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           return;
         }
 
+        const isMobile = window.innerWidth <= 768;
+        console.log('=== MOBILE PREVIEW DEBUG ===');
         console.log('Loading preview for file:', file.name, 'Type:', file.type, 'Size:', file.size);
+        console.log('Is Mobile:', isMobile);
         console.log('File constructor:', file.constructor.name);
         console.log('File instanceof File:', file instanceof File);
         console.log('File instanceof Blob:', file instanceof Blob);
+        console.log('Browser capabilities:');
+        console.log('- URL.createObjectURL:', typeof URL.createObjectURL);
+        console.log('- FileReader:', typeof FileReader);
+        console.log('- Canvas:', !!document.createElement('canvas').getContext);
+        console.log('- OffscreenCanvas:', typeof OffscreenCanvas);
+        console.log('============================');
 
         // Check file type more thoroughly
         const isValidImage = file.type && (
