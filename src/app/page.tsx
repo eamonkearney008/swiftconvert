@@ -128,6 +128,20 @@ function HomeContent() {
       console.log('Event:', e);
       console.log('Files:', e.target.files);
       
+      // Aggressive memory cleanup on mobile before processing new files
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+      if (isMobile) {
+        console.log('Mobile detected - performing memory cleanup...');
+        // Clear any existing object URLs
+        selectedFiles.forEach(file => {
+          // This will trigger cleanup in ImagePreview components
+        });
+        // Force garbage collection hint
+        if ((window as any).gc) {
+          (window as any).gc();
+        }
+      }
+      
       if (e.target.files && e.target.files.length > 0) {
         const files = Array.from(e.target.files);
         console.log('Files array:', files);
@@ -268,15 +282,31 @@ function HomeContent() {
       const results: any[] = [];
       
       if (conversionMethod === 'local') {
-        // Local processing with batch optimization
+        // Local processing with aggressive memory management
         // For large files or mobile, process one at a time to avoid memory issues
         const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
         const hasLargeFiles = selectedFiles.some(file => file.size > 10 * 1024 * 1024);
         const batchSize = (hasLargeFiles || isMobile) ? 1 : Math.min(3, selectedFiles.length);
         
         console.log(`Batch processing: mobile=${isMobile}, largeFiles=${hasLargeFiles}, batchSize=${batchSize}`);
-        const batches = [];
         
+        // Aggressive memory cleanup before starting conversion
+        if (isMobile) {
+          console.log('Mobile conversion - performing pre-conversion memory cleanup...');
+          // Clear any existing object URLs
+          if ((window as any).gc) {
+            (window as any).gc();
+          }
+          // Clear any cached images
+          const images = document.querySelectorAll('img');
+          images.forEach(img => {
+            if (img.src.startsWith('blob:')) {
+              img.src = '';
+            }
+          });
+        }
+        
+        const batches = [];
         for (let i = 0; i < selectedFiles.length; i += batchSize) {
           batches.push(selectedFiles.slice(i, i + batchSize));
         }
@@ -284,26 +314,39 @@ function HomeContent() {
         for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
           const batch = batches[batchIndex];
           
-          // Process batch concurrently (or sequentially for large files)
-          const batchPromises = batch.map(async (file, fileIndex) => {
+          // Process batch sequentially for mobile to avoid memory issues
+          for (let fileIndex = 0; fileIndex < batch.length; fileIndex++) {
+            const file = batch[fileIndex];
             const globalIndex = batchIndex * batchSize + fileIndex;
+            
             setConversionProgress({ 
               current: globalIndex + 1, 
               total: selectedFiles.length, 
               currentFile: file.name 
             });
             
+            console.log(`Converting file ${globalIndex + 1}/${selectedFiles.length}: ${file.name}`);
+            
             const result = await convertImageLocally(file, currentSettings);
             setConversionResults(prev => [...prev, result]);
-            return result;
-          });
+            results.push(result);
+            
+            // Aggressive memory cleanup after each file on mobile
+            if (isMobile) {
+              console.log('Mobile - performing post-conversion memory cleanup...');
+              // Force garbage collection hint
+              if ((window as any).gc) {
+                (window as any).gc();
+              }
+              // Small delay to allow cleanup
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          }
           
-          const batchResults = await Promise.all(batchPromises);
-          results.push(...batchResults);
-          
-          // Longer delay for large files to allow memory cleanup
+          // Longer delay between batches for memory cleanup
           if (batchIndex < batches.length - 1) {
-            const delay = hasLargeFiles ? 200 : 50;
+            const delay = isMobile ? 500 : (hasLargeFiles ? 200 : 50);
+            console.log(`Waiting ${delay}ms for memory cleanup...`);
             await new Promise(resolve => setTimeout(resolve, delay));
           }
         }

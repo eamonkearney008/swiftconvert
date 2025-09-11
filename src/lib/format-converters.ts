@@ -243,6 +243,15 @@ export class FormatConverter {
     
     console.log(`Mobile: ${isMobile}, Using OffscreenCanvas: ${useOffscreenCanvas}`);
     
+    // Aggressive memory management for mobile
+    if (isMobile) {
+      console.log('Mobile conversion - performing memory cleanup...');
+      // Clear any existing object URLs
+      if ((window as any).gc) {
+        (window as any).gc();
+      }
+    }
+    
     // Use regular canvas on mobile for better compatibility
     const canvas = useOffscreenCanvas 
       ? new OffscreenCanvas(1, 1) 

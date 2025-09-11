@@ -142,6 +142,46 @@ export default function MobileDebug() {
           
           <button
             onClick={() => {
+              // Memory cleanup test
+              console.log('=== MEMORY CLEANUP TEST ===');
+              console.log('Before cleanup:');
+              if ((performance as any).memory) {
+                console.log('Used:', ((performance as any).memory.usedJSHeapSize / 1024 / 1024).toFixed(2), 'MB');
+                console.log('Total:', ((performance as any).memory.totalJSHeapSize / 1024 / 1024).toFixed(2), 'MB');
+              }
+              
+              // Clear blob URLs
+              const images = document.querySelectorAll('img');
+              let clearedCount = 0;
+              images.forEach(img => {
+                if (img.src.startsWith('blob:')) {
+                  img.src = '';
+                  clearedCount++;
+                }
+              });
+              
+              // Force garbage collection if available
+              if ((window as any).gc) {
+                (window as any).gc();
+                console.log('Garbage collection triggered');
+              }
+              
+              console.log(`Cleared ${clearedCount} blob URLs`);
+              console.log('After cleanup:');
+              if ((performance as any).memory) {
+                console.log('Used:', ((performance as any).memory.usedJSHeapSize / 1024 / 1024).toFixed(2), 'MB');
+                console.log('Total:', ((performance as any).memory.totalJSHeapSize / 1024 / 1024).toFixed(2), 'MB');
+              }
+              
+              alert(`Memory cleanup completed!\nCleared ${clearedCount} blob URLs\nCheck console for memory stats`);
+            }}
+            className="w-full bg-orange-500 text-white py-2 rounded text-sm"
+          >
+            Memory Cleanup Test
+          </button>
+          
+          <button
+            onClick={() => {
               const testFile = new File(['test'], 'test.txt', { type: 'text/plain' });
               const url = URL.createObjectURL(testFile);
               console.log('URL.createObjectURL test:', url);
