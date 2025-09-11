@@ -8,6 +8,13 @@ export default function MobileDebug() {
   const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
 
   useEffect(() => {
+    // Force console logs to appear
+    console.log('=== MOBILE DEBUG COMPONENT LOADED ===');
+    console.log('Timestamp:', new Date().toISOString());
+    console.log('User Agent:', navigator.userAgent);
+    console.log('Screen Size:', window.innerWidth, 'x', window.innerHeight);
+    console.log('Is Mobile:', window.innerWidth <= 768);
+    
     const info = {
       userAgent: navigator.userAgent,
       isMobile: window.innerWidth <= 768,
@@ -41,6 +48,7 @@ export default function MobileDebug() {
       onLine: navigator.onLine
     };
     
+    console.log('Debug Info:', info);
     setDebugInfo(info);
     
     // Capture console logs
@@ -119,6 +127,19 @@ export default function MobileDebug() {
         )}
         
         <div className="mt-4 pt-4 border-t space-y-2">
+          <button
+            onClick={() => {
+              console.log('=== FORCE CONSOLE TEST ===');
+              console.log('This is a test log message');
+              console.error('This is a test error message');
+              console.warn('This is a test warning message');
+              alert('Console test logs sent! Check Chrome DevTools console now.');
+            }}
+            className="w-full bg-red-500 text-white py-2 rounded text-sm"
+          >
+            Force Console Logs
+          </button>
+          
           <button
             onClick={() => {
               const testFile = new File(['test'], 'test.txt', { type: 'text/plain' });

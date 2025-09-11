@@ -43,6 +43,12 @@ function HomeContent() {
 
   // Load history and statistics from localStorage on mount
   useEffect(() => {
+    console.log('=== PAGE LOADED ===');
+    console.log('Timestamp:', new Date().toISOString());
+    console.log('User Agent:', navigator.userAgent);
+    console.log('Screen Size:', window.innerWidth, 'x', window.innerHeight);
+    console.log('Is Mobile:', window.innerWidth <= 768);
+    
     const savedHistory = localStorage.getItem('conversionHistory');
     const savedStats = localStorage.getItem('conversionStatistics');
     
@@ -118,8 +124,14 @@ function HomeContent() {
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
+      console.log('=== FILE INPUT TRIGGERED ===');
+      console.log('Event:', e);
+      console.log('Files:', e.target.files);
+      
       if (e.target.files && e.target.files.length > 0) {
         const files = Array.from(e.target.files);
+        console.log('Files array:', files);
+        console.log('Number of files:', files.length);
         
         // Validate files before processing
         const validFiles: File[] = [];
