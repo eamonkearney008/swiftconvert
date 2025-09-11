@@ -239,10 +239,16 @@ function HomeContent() {
     setConversionResults([]);
     setConversionProgress({ current: 0, total: selectedFiles.length, currentFile: '' });
 
+    // Check for large files and warn user
+    const largeFiles = selectedFiles.filter(file => file.size > 10 * 1024 * 1024);
+    const hasLargeFiles = largeFiles.length > 0;
+    
     addToast({
       type: 'info',
       title: 'Conversion Started',
-      description: `Processing ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}...`
+      description: hasLargeFiles 
+        ? `Processing ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} (${largeFiles.length} large file${largeFiles.length > 1 ? 's' : ''} - may take longer)...`
+        : `Processing ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}...`
     });
 
     try {
@@ -250,7 +256,9 @@ function HomeContent() {
       
       if (conversionMethod === 'local') {
         // Local processing with batch optimization
-        const batchSize = Math.min(3, selectedFiles.length); // Process max 3 files concurrently
+        // For large files, process one at a time to avoid memory issues
+        const hasLargeFiles = selectedFiles.some(file => file.size > 10 * 1024 * 1024);
+        const batchSize = hasLargeFiles ? 1 : Math.min(3, selectedFiles.length);
         const batches = [];
         
         for (let i = 0; i < selectedFiles.length; i += batchSize) {
@@ -260,7 +268,7 @@ function HomeContent() {
         for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
           const batch = batches[batchIndex];
           
-          // Process batch concurrently
+          // Process batch concurrently (or sequentially for large files)
           const batchPromises = batch.map(async (file, fileIndex) => {
             const globalIndex = batchIndex * batchSize + fileIndex;
             setConversionProgress({ 
@@ -277,9 +285,10 @@ function HomeContent() {
           const batchResults = await Promise.all(batchPromises);
           results.push(...batchResults);
           
-          // Small delay between batches to prevent UI blocking
+          // Longer delay for large files to allow memory cleanup
           if (batchIndex < batches.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 50));
+            const delay = hasLargeFiles ? 200 : 50;
+            await new Promise(resolve => setTimeout(resolve, delay));
           }
         }
       } else {
@@ -324,12 +333,25 @@ function HomeContent() {
 
   const convertImageLocally = async (file: File, settings: any) => {
     try {
+      // Check file size and warn for very large files
+      const fileSizeMB = file.size / (1024 * 1024);
+      if (fileSizeMB > 20) {
+        console.warn(`Large file detected: ${fileSizeMB.toFixed(1)}MB - conversion may take longer`);
+      }
+
       // Use requestIdleCallback to avoid blocking the main thread
       return new Promise((resolve, reject) => {
         const processConversion = async () => {
           try {
-            // Use FormatConverter with optimized settings
-            const result = await FormatConverter.convertToFormat(file, settings.format, settings.quality);
+            // Add timeout for large files
+            const timeoutMs = fileSizeMB > 10 ? 60000 : 30000; // 60s for >10MB, 30s for smaller
+            
+            const conversionPromise = FormatConverter.convertToFormat(file, settings.format, settings.quality);
+            const timeoutPromise = new Promise((_, timeoutReject) => {
+              setTimeout(() => timeoutReject(new Error('Conversion timeout - file may be too large')), timeoutMs);
+            });
+
+            const result = await Promise.race([conversionPromise, timeoutPromise]) as any;
             
             resolve({
               originalFile: file,
@@ -343,13 +365,15 @@ function HomeContent() {
               method: 'optimized-main-thread'
             });
           } catch (error) {
-            reject(new Error(`Failed to convert image: ${error instanceof Error ? error.message : 'Unknown error'}`));
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            console.error(`Conversion failed for ${file.name}:`, errorMessage);
+            reject(new Error(`Failed to convert image: ${errorMessage}`));
           }
         };
 
         // Use requestIdleCallback if available, otherwise use setTimeout
         if (typeof requestIdleCallback !== 'undefined') {
-          requestIdleCallback(processConversion, { timeout: 100 });
+          requestIdleCallback(processConversion, { timeout: 200 });
         } else {
           setTimeout(processConversion, 0);
         }

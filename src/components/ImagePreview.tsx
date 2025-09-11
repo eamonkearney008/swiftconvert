@@ -51,9 +51,9 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           return;
         }
 
-        // Check file size - more restrictive on mobile
+        // Check file size - increased limits for better support
         const isMobile = window.innerWidth <= 768;
-        const maxSize = isMobile ? 2 * 1024 * 1024 : 10 * 1024 * 1024; // 2MB on mobile, 10MB on desktop
+        const maxSize = isMobile ? 5 * 1024 * 1024 : 50 * 1024 * 1024; // 5MB on mobile, 50MB on desktop
         
         if (file.size > maxSize) {
           console.error(`File too large for preview: ${file.size} bytes (max: ${maxSize} bytes on ${isMobile ? 'mobile' : 'desktop'})`);
@@ -66,7 +66,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
 
         // For mobile and large files, try to resize first
         let fileToUse = file;
-        if (isMobile && file.size > 1024 * 1024) { // 1MB threshold for resizing
+        if (isMobile && file.size > 2 * 1024 * 1024) { // 2MB threshold for resizing
           try {
             console.log('Large file on mobile - attempting to resize for preview...');
             fileToUse = await resizeImageForMobile(file);
@@ -270,8 +270,8 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
       
       img.onload = () => {
         try {
-          // Calculate new dimensions (max 800px on longest side)
-          const maxSize = 800;
+          // Calculate new dimensions (max 1200px on longest side for better quality)
+          const maxSize = 1200;
           let { width, height } = img;
           
           if (width > height && width > maxSize) {
@@ -291,6 +291,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             ctx.drawImage(img, 0, 0, width, height);
           }
           
+          // Use higher quality for better results
           canvas.toBlob((blob) => {
             if (blob) {
               const resizedFile = new File([blob], file.name, { type: 'image/jpeg' });
@@ -299,7 +300,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             } else {
               reject(new Error('Failed to create resized image'));
             }
-          }, 'image/jpeg', 0.8);
+          }, 'image/jpeg', 0.9); // Increased quality from 0.8 to 0.9
         } catch (error) {
           reject(error);
         }
@@ -382,7 +383,7 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             <p className="text-xs text-red-500 dark:text-red-500 mt-1">
               File will still be converted
             </p>
-            {file.size > 2 * 1024 * 1024 && (
+            {file.size > 5 * 1024 * 1024 && (
               <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
                 Large file ({Math.round(file.size / 1024 / 1024)}MB) - preview may be slow
               </p>
