@@ -219,6 +219,8 @@ export class FormatConverter {
    * Optimized canvas conversion with performance improvements
    */
   private static async convertWithOptimizedCanvas(file: File, format: string, quality: number): Promise<ConversionResult> {
+    console.log(`Starting conversion: ${file.name} (${file.size} bytes) to ${format} with quality ${quality}`);
+    
     // Use OffscreenCanvas if available for better performance
     const canvas = typeof OffscreenCanvas !== 'undefined' 
       ? new OffscreenCanvas(1, 1) 
@@ -230,6 +232,8 @@ export class FormatConverter {
     return new Promise((resolve, reject) => {
       img.onload = () => {
         try {
+          console.log(`Image loaded: ${img.width}x${img.height}`);
+          
           // Set canvas dimensions
           canvas.width = img.width;
           canvas.height = img.height;
@@ -239,50 +243,76 @@ export class FormatConverter {
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0);
+            console.log('Image drawn to canvas');
+          } else {
+            reject(new Error('Failed to get canvas context'));
+            return;
           }
           
-          const mimeType = `image/${format}`;
+          // Handle format-specific MIME types
+          let mimeType: string;
+          switch (format) {
+            case 'jpg':
+            case 'jpeg':
+              mimeType = 'image/jpeg';
+              break;
+            case 'png':
+              mimeType = 'image/png';
+              break;
+            case 'webp':
+              mimeType = 'image/webp';
+              break;
+            case 'avif':
+              mimeType = 'image/avif';
+              break;
+            default:
+              mimeType = `image/${format}`;
+          }
+          
           const qualityValue = format === 'png' ? undefined : quality / 100;
+          console.log(`Converting to ${mimeType} with quality ${qualityValue}`);
           
           // Use convertToBlob for OffscreenCanvas or toBlob for regular canvas
           if (canvas instanceof OffscreenCanvas) {
             canvas.convertToBlob({ type: mimeType, quality: qualityValue })
               .then(blob => {
                 if (blob) {
+                  console.log(`Conversion successful: ${blob.size} bytes`);
                   resolve({ blob, actualFormat: format });
                 } else {
-                  reject(new Error(`Failed to convert to ${format}`));
+                  console.error('Canvas.convertToBlob returned null');
+                  reject(new Error(`Failed to convert to ${format} - no blob returned`));
                 }
               })
-              .catch(error => reject(new Error(`Conversion failed: ${error.message}`)));
+              .catch(error => {
+                console.error('Canvas.convertToBlob error:', error);
+                reject(new Error(`Conversion failed: ${error.message}`));
+              });
           } else {
             (canvas as HTMLCanvasElement).toBlob((blob) => {
               if (blob) {
+                console.log(`Conversion successful: ${blob.size} bytes`);
                 resolve({ blob, actualFormat: format });
               } else {
-                reject(new Error(`Failed to convert to ${format}`));
+                console.error('Canvas.toBlob returned null');
+                reject(new Error(`Failed to convert to ${format} - no blob returned`));
               }
             }, mimeType, qualityValue);
           }
         } catch (error) {
+          console.error('Canvas processing error:', error);
           reject(new Error(`Canvas processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
         }
       };
       
-      img.onerror = () => reject(new Error('Failed to load image'));
+      img.onerror = (error) => {
+        console.error('Image load error:', error);
+        reject(new Error('Failed to load image'));
+      };
       
-      // Use createImageBitmap for better performance if available
-      if (typeof createImageBitmap !== 'undefined') {
-        createImageBitmap(file)
-          .then(bitmap => {
-            img.src = URL.createObjectURL(file);
-          })
-          .catch(() => {
-            img.src = URL.createObjectURL(file);
-          });
-      } else {
-        img.src = URL.createObjectURL(file);
-      }
+      // Load image directly
+      console.log('Loading image...');
+      img.src = URL.createObjectURL(file);
     });
   }
 }
