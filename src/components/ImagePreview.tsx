@@ -34,18 +34,6 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
         }
 
         const isMobile = window.innerWidth <= 768;
-        console.log('=== MOBILE PREVIEW DEBUG ===');
-        console.log('Loading preview for file:', file.name, 'Type:', file.type, 'Size:', file.size);
-        console.log('Is Mobile:', isMobile);
-        console.log('File constructor:', file.constructor.name);
-        console.log('File instanceof File:', file instanceof File);
-        console.log('File instanceof Blob:', file instanceof Blob);
-        console.log('Browser capabilities:');
-        console.log('- URL.createObjectURL:', typeof URL.createObjectURL);
-        console.log('- FileReader:', typeof FileReader);
-        console.log('- Canvas:', !!document.createElement('canvas').getContext);
-        console.log('- OffscreenCanvas:', typeof OffscreenCanvas);
-        console.log('============================');
 
         // Check file type more thoroughly
         const isValidImage = file.type && (
@@ -64,30 +52,23 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
         const maxSize = isMobile ? 20 * 1024 * 1024 : 100 * 1024 * 1024; // 20MB on mobile, 100MB on desktop
         
         if (file.size > maxSize) {
-          console.error(`File too large for preview: ${file.size} bytes (max: ${maxSize} bytes on ${isMobile ? 'mobile' : 'desktop'})`);
           setError(true);
           setIsLoading(false);
           return;
         }
-        
-        console.log(`File size check passed: ${file.size} bytes (${isMobile ? 'mobile' : 'desktop'} limit: ${maxSize} bytes)`);
 
         // For mobile and large files, try to resize first
         let fileToUse = file;
         if (isMobile && file.size > 5 * 1024 * 1024) { // 5MB threshold for resizing on mobile
           try {
-            console.log('Large file on mobile - attempting to resize for preview...');
             fileToUse = await resizeImageForMobile(file);
           } catch (resizeError) {
-            console.log('Resize failed, using original file:', resizeError);
             fileToUse = file;
           }
         }
 
         // Simplified mobile-friendly preview loading
         try {
-          console.log('Loading preview for:', fileToUse.name, fileToUse.size, 'bytes');
-          
           // Use URL.createObjectURL - most reliable on mobile
           const url = URL.createObjectURL(fileToUse);
           setObjectURL(url);
@@ -97,7 +78,6 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           
           // Set timeout for mobile
           const timeout = setTimeout(() => {
-            console.error('Preview load timeout');
             URL.revokeObjectURL(url);
             setObjectURL(null);
             setError(true);
@@ -106,14 +86,12 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           
           img.onload = () => {
             clearTimeout(timeout);
-            console.log('Preview loaded successfully:', img.width, 'x', img.height);
             setPreview(url);
             setIsLoading(false);
           };
           
           img.onerror = (error) => {
             clearTimeout(timeout);
-            console.error('Preview failed to load:', error);
             URL.revokeObjectURL(url);
             setObjectURL(null);
             setError(true);
@@ -218,7 +196,6 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
 
   // Retry function
   const handleRetry = () => {
-    console.log('Retrying preview load...');
     setRetryCount(prev => prev + 1);
     setError(false);
     setIsLoading(true);

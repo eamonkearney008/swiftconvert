@@ -10,7 +10,6 @@ import { FormatConverter } from '../lib/format-converters';
 import { getPerformanceMonitor } from '../lib/performance';
 import HeaderNavigation from '../components/HeaderNavigation';
 import { InContentAd } from '../components/AdSense';
-import MobileDebug from '../components/MobileDebug';
 
 function HomeContent() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -43,12 +42,6 @@ function HomeContent() {
 
   // Load history and statistics from localStorage on mount
   useEffect(() => {
-    console.log('=== PAGE LOADED ===');
-    console.log('Timestamp:', new Date().toISOString());
-    console.log('User Agent:', navigator.userAgent);
-    console.log('Screen Size:', window.innerWidth, 'x', window.innerHeight);
-    console.log('Is Mobile:', window.innerWidth <= 768);
-    
     const savedHistory = localStorage.getItem('conversionHistory');
     const savedStats = localStorage.getItem('conversionStatistics');
     
@@ -124,14 +117,9 @@ function HomeContent() {
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      console.log('=== FILE INPUT TRIGGERED ===');
-      console.log('Event:', e);
-      console.log('Files:', e.target.files);
-      
       // Aggressive memory cleanup on mobile before processing new files
       const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
       if (isMobile) {
-        console.log('Mobile detected - performing memory cleanup...');
         // Clear any existing object URLs
         selectedFiles.forEach(file => {
           // This will trigger cleanup in ImagePreview components
@@ -144,8 +132,6 @@ function HomeContent() {
       
       if (e.target.files && e.target.files.length > 0) {
         const files = Array.from(e.target.files);
-        console.log('Files array:', files);
-        console.log('Number of files:', files.length);
         
         // Validate files before processing
         const validFiles: File[] = [];
@@ -288,11 +274,8 @@ function HomeContent() {
         const hasLargeFiles = selectedFiles.some(file => file.size > 10 * 1024 * 1024);
         const batchSize = (hasLargeFiles || isMobile) ? 1 : Math.min(3, selectedFiles.length);
         
-        console.log(`Batch processing: mobile=${isMobile}, largeFiles=${hasLargeFiles}, batchSize=${batchSize}`);
-        
         // Aggressive memory cleanup before starting conversion
         if (isMobile) {
-          console.log('Mobile conversion - performing pre-conversion memory cleanup...');
           // Clear any existing object URLs
           if ((window as any).gc) {
             (window as any).gc();
@@ -325,15 +308,12 @@ function HomeContent() {
               currentFile: file.name 
             });
             
-            console.log(`Converting file ${globalIndex + 1}/${selectedFiles.length}: ${file.name}`);
-            
             const result = await convertImageLocally(file, currentSettings);
             setConversionResults(prev => [...prev, result]);
             results.push(result);
             
             // Aggressive memory cleanup after each file on mobile
             if (isMobile) {
-              console.log('Mobile - performing post-conversion memory cleanup...');
               // Force garbage collection hint
               if ((window as any).gc) {
                 (window as any).gc();
@@ -346,7 +326,6 @@ function HomeContent() {
           // Longer delay between batches for memory cleanup
           if (batchIndex < batches.length - 1) {
             const delay = isMobile ? 500 : (hasLargeFiles ? 200 : 50);
-            console.log(`Waiting ${delay}ms for memory cleanup...`);
             await new Promise(resolve => setTimeout(resolve, delay));
           }
         }
@@ -1409,8 +1388,6 @@ function HomeContent() {
         )}
       </main>
       
-      {/* Mobile Debug Component */}
-      <MobileDebug />
     </div>
   );
 }

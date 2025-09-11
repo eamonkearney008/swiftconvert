@@ -235,17 +235,12 @@ export class FormatConverter {
    * Optimized canvas conversion with performance improvements
    */
   private static async convertWithOptimizedCanvas(file: File, format: string, quality: number): Promise<ConversionResult> {
-    console.log(`Starting conversion: ${file.name} (${file.size} bytes) to ${format} with quality ${quality}`);
-    
     // Check if we're on mobile and avoid OffscreenCanvas (can cause issues on some mobile browsers)
     const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
     const useOffscreenCanvas = !isMobile && typeof OffscreenCanvas !== 'undefined';
     
-    console.log(`Mobile: ${isMobile}, Using OffscreenCanvas: ${useOffscreenCanvas}`);
-    
     // Aggressive memory management for mobile
     if (isMobile) {
-      console.log('Mobile conversion - performing memory cleanup...');
       // Clear any existing object URLs
       if ((window as any).gc) {
         (window as any).gc();
