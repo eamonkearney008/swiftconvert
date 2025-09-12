@@ -411,12 +411,12 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     {getStatusIcon(entry.status)}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">Batch {entry.id.slice(-8)}</p>
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <span>{formatDate(entry.timestamp)}</span>
+                      <div className="flex items-center gap-2 text-xs text-slate-500 min-w-0">
+                        <span className="truncate">{formatDate(entry.timestamp)}</span>
                         <span>•</span>
-                        <span>{entry.completedFiles}/{entry.totalFiles} files</span>
+                        <span className="truncate">{entry.completedFiles}/{entry.totalFiles} files</span>
                         <span>•</span>
-                        <span className="truncate max-w-[60px]">{Math.round(entry.averageCompressionRatio)}% compression</span>
+                        <span className="truncate max-w-[50px]">{Math.round(entry.averageCompressionRatio)}% comp.</span>
                         <span>•</span>
                         <Badge className={getStatusColor(entry.status)}>
                           {entry.status}
