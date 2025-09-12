@@ -361,14 +361,9 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                         {entry.conversionSettings.format.toUpperCase()}
                       </Badge>
                       {entry.method && (
-                        <div className="flex items-center gap-1 min-w-0 flex-shrink-0">
-                          <Badge variant="secondary" className="text-xs flex-shrink-0">
-                            {entry.method}
-                          </Badge>
-                          <span className="text-xs text-green-600 dark:text-green-400 flex-shrink-0">
-                            {Math.min(Math.max(entry.result.compressionRatio, 0), 99.9).toFixed(1)}%
-                          </span>
-                        </div>
+                        <Badge variant="secondary" className="text-xs flex-shrink-0">
+                          {entry.method}
+                        </Badge>
                       )}
                       <div className="flex items-center gap-1 ml-auto">
                         {entry.status === 'completed' && (
