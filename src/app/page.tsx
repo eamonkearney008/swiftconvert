@@ -108,14 +108,19 @@ function HomeContent() {
       }, 3000);
     }
 
-    // Monitor memory status
+    // Monitor memory status (only in browser)
     const updateMemoryStatus = () => {
-      setMemoryStatus(memoryManager.getMemoryPressureLevel());
+      if (typeof window !== 'undefined') {
+        setMemoryStatus(memoryManager.getMemoryPressureLevel());
+      }
     };
     
-    // Update memory status every 3 seconds
-    const memoryInterval = setInterval(updateMemoryStatus, 3000);
-    updateMemoryStatus(); // Initial update
+    // Update memory status every 3 seconds (only in browser)
+    let memoryInterval: NodeJS.Timeout | null = null;
+    if (typeof window !== 'undefined') {
+      memoryInterval = setInterval(updateMemoryStatus, 3000);
+      updateMemoryStatus(); // Initial update
+    }
 
     return () => {
       if (typeof Worker !== 'undefined') {
@@ -123,14 +128,16 @@ function HomeContent() {
           destroyWorkerManager();
         });
       }
-      clearInterval(memoryInterval);
+      if (memoryInterval) {
+        clearInterval(memoryInterval);
+      }
     };
   }, []);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      // Use memory manager for intelligent cleanup
-      if (memoryManager.shouldUseLightCleanup()) {
+      // Use memory manager for intelligent cleanup (only in browser)
+      if (typeof window !== 'undefined' && memoryManager.shouldUseLightCleanup()) {
         memoryManager.forceCleanup();
       }
       
@@ -272,12 +279,12 @@ function HomeContent() {
       const results: any[] = [];
       
       if (conversionMethod === 'local') {
-        // Use memory manager for intelligent batch sizing and cleanup
-        const batchSize = memoryManager.getRecommendedBatchSize();
-        const delay = memoryManager.getRecommendedDelay();
+        // Use memory manager for intelligent batch sizing and cleanup (only in browser)
+        const batchSize = typeof window !== 'undefined' ? memoryManager.getRecommendedBatchSize() : 3;
+        const delay = typeof window !== 'undefined' ? memoryManager.getRecommendedDelay() : 50;
         
-        // Intelligent memory cleanup before starting conversion
-        if (memoryManager.shouldUseLightCleanup()) {
+        // Intelligent memory cleanup before starting conversion (only in browser)
+        if (typeof window !== 'undefined' && memoryManager.shouldUseLightCleanup()) {
           memoryManager.forceCleanup();
         }
         
@@ -304,8 +311,8 @@ function HomeContent() {
             setConversionResults(prev => [...prev, result]);
             results.push(result);
             
-            // Intelligent memory cleanup after each file
-            if (memoryManager.shouldUseLightCleanup()) {
+            // Intelligent memory cleanup after each file (only in browser)
+            if (typeof window !== 'undefined' && memoryManager.shouldUseLightCleanup()) {
               memoryManager.forceCleanup();
               // Dynamic delay based on memory pressure
               await new Promise(resolve => setTimeout(resolve, delay));

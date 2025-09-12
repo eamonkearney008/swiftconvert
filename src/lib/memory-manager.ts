@@ -10,7 +10,10 @@ export class MemoryManager {
   private isMonitoring = false;
 
   private constructor() {
-    this.startMemoryMonitoring();
+    // Only start monitoring in the browser
+    if (typeof window !== 'undefined') {
+      this.startMemoryMonitoring();
+    }
   }
 
   static getInstance(): MemoryManager {
@@ -24,7 +27,7 @@ export class MemoryManager {
    * Start monitoring memory pressure
    */
   private startMemoryMonitoring() {
-    if (this.isMonitoring) return;
+    if (this.isMonitoring || typeof window === 'undefined') return;
     this.isMonitoring = true;
 
     // Check memory pressure every 5 seconds
@@ -56,6 +59,8 @@ export class MemoryManager {
    * Check current memory pressure level
    */
   private checkMemoryPressure() {
+    if (typeof window === 'undefined') return;
+    
     const isMobile = window.innerWidth <= 768;
     const tabCount = this.estimateTabCount();
     
@@ -90,6 +95,8 @@ export class MemoryManager {
    * Analyze memory usage from performance.memory
    */
   private analyzeMemoryUsage(memory: any) {
+    if (typeof window === 'undefined') return;
+    
     const usedRatio = memory.usedJSHeapSize / memory.jsHeapSizeLimit;
     
     if (usedRatio > 0.85) {
@@ -103,6 +110,8 @@ export class MemoryManager {
    * Estimate number of open tabs (rough approximation)
    */
   private estimateTabCount(): number {
+    if (typeof window === 'undefined') return 1;
+    
     // This is a rough estimate based on available memory and performance
     if ('memory' in performance) {
       const memory = (performance as any).memory;
@@ -176,6 +185,8 @@ export class MemoryManager {
    * Clear all object URLs from the page
    */
   private clearAllObjectURLs() {
+    if (typeof window === 'undefined') return;
+    
     // Find all images with blob URLs and clear them
     const images = document.querySelectorAll('img');
     images.forEach(img => {
@@ -258,6 +269,8 @@ export class MemoryManager {
    * Check if we should resize images for preview
    */
   shouldResizeForPreview(fileSize: number): boolean {
+    if (typeof window === 'undefined') return false;
+    
     const isMobile = window.innerWidth <= 768;
     
     if (this.memoryPressureLevel === 'high') {
@@ -295,6 +308,16 @@ export class MemoryManager {
    * Get memory usage information
    */
   getMemoryInfo() {
+    if (typeof window === 'undefined') {
+      return {
+        used: 0,
+        total: 0,
+        usedRatio: 0,
+        pressureLevel: 'low' as const,
+        tabCount: 1
+      };
+    }
+    
     if ('memory' in performance) {
       const memory = (performance as any).memory;
       return {
