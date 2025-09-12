@@ -8,6 +8,7 @@ import { LazyImagePreview, LazyConversionResults, LazyProgressTracker, LazyConve
 import { Tooltip } from '../components/ui/tooltip';
 import { FormatConverter } from '../lib/format-converters';
 import { getPerformanceMonitor } from '../lib/performance';
+import { memoryManager } from '../lib/memory-manager';
 import HeaderNavigation from '../components/HeaderNavigation';
 import { InContentAd } from '../components/AdSense';
 
@@ -37,6 +38,7 @@ function HomeContent() {
   });
   const [historySearch, setHistorySearch] = useState('');
   const [historyFilter, setHistoryFilter] = useState<'all' | 'recent' | 'large-savings'>('all');
+  const [memoryStatus, setMemoryStatus] = useState<'low' | 'medium' | 'high'>('low');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -106,24 +108,30 @@ function HomeContent() {
       }, 3000);
     }
 
+    // Monitor memory status
+    const updateMemoryStatus = () => {
+      setMemoryStatus(memoryManager.getMemoryPressureLevel());
+    };
+    
+    // Update memory status every 3 seconds
+    const memoryInterval = setInterval(updateMemoryStatus, 3000);
+    updateMemoryStatus(); // Initial update
+
     return () => {
       if (typeof Worker !== 'undefined') {
         import('../lib/worker-manager').then(({ destroyWorkerManager }) => {
           destroyWorkerManager();
         });
       }
+      clearInterval(memoryInterval);
     };
   }, []);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      // Light memory cleanup on mobile before processing new files
-      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-      if (isMobile) {
-        // Force garbage collection hint (but don't clear existing previews)
-        if ((window as any).gc) {
-          (window as any).gc();
-        }
+      // Use memory manager for intelligent cleanup
+      if (memoryManager.shouldUseLightCleanup()) {
+        memoryManager.forceCleanup();
       }
       
       if (e.target.files && e.target.files.length > 0) {
@@ -264,19 +272,13 @@ function HomeContent() {
       const results: any[] = [];
       
       if (conversionMethod === 'local') {
-        // Local processing with aggressive memory management
-        // For large files or mobile, process one at a time to avoid memory issues
-        const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-        const hasLargeFiles = selectedFiles.some(file => file.size > 10 * 1024 * 1024);
-        const batchSize = (hasLargeFiles || isMobile) ? 1 : Math.min(3, selectedFiles.length);
+        // Use memory manager for intelligent batch sizing and cleanup
+        const batchSize = memoryManager.getRecommendedBatchSize();
+        const delay = memoryManager.getRecommendedDelay();
         
-        // Selective memory cleanup before starting conversion (preserve previews)
-        if (isMobile) {
-          // Clear any existing object URLs (but not preview images)
-          if ((window as any).gc) {
-            (window as any).gc();
-          }
-          // Don't clear preview images - they should stay visible during conversion
+        // Intelligent memory cleanup before starting conversion
+        if (memoryManager.shouldUseLightCleanup()) {
+          memoryManager.forceCleanup();
         }
         
         const batches = [];
@@ -302,21 +304,17 @@ function HomeContent() {
             setConversionResults(prev => [...prev, result]);
             results.push(result);
             
-            // Light memory cleanup after each file on mobile
-            if (isMobile) {
-              // Force garbage collection hint
-              if ((window as any).gc) {
-                (window as any).gc();
-              }
-              // Small delay to allow cleanup
-              await new Promise(resolve => setTimeout(resolve, 50));
+            // Intelligent memory cleanup after each file
+            if (memoryManager.shouldUseLightCleanup()) {
+              memoryManager.forceCleanup();
+              // Dynamic delay based on memory pressure
+              await new Promise(resolve => setTimeout(resolve, delay));
             }
           }
           
-          // Light delay between batches for memory cleanup
+          // Dynamic delay between batches for memory cleanup
           if (batchIndex < batches.length - 1) {
-            const delay = isMobile ? 200 : (hasLargeFiles ? 100 : 50);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            await new Promise(resolve => setTimeout(resolve, delay * 2));
           }
         }
       } else {
@@ -686,6 +684,27 @@ function HomeContent() {
                   >
                     Choose Files
                   </button>
+                  
+                  {/* Memory Status Indicator */}
+                  {memoryStatus !== 'low' && (
+                    <div className={`mt-3 px-3 py-2 rounded-lg text-sm ${
+                      memoryStatus === 'high' 
+                        ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' 
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${
+                          memoryStatus === 'high' ? 'bg-orange-500' : 'bg-yellow-500'
+                        }`} />
+                        <span>
+                          {memoryStatus === 'high' 
+                            ? 'High memory usage detected - processing will be optimized for stability'
+                            : 'Multiple tabs detected - using optimized processing'
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>

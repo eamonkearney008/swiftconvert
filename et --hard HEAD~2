@@ -1,0 +1,5 @@
+[33m3a0f416[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m Fix mobile layout in ConversionResults - prevent percentage overflow by using 2-column grid and responsive text sizes
+[33mb09a181[m Fix mobile layout in conversation history - prevent percentage and content from overflowing outside file converted boxes
+[33mca15108[m Fix mobile image preview disappearing after conversion - reduce aggressive memory cleanup to preserve previews during conversion
+[33mdf2f78f[m Remove MobileDebug component and clean up excessive console logging - keep memory management fixes
+[33m8b8d3af[m Implement aggressive memory management for mobile - cleanup object URLs, sequential processing, memory monitoring, garbage collection hints

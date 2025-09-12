@@ -421,7 +421,11 @@ export class FileManager {
       totalSpaceSaved: completedFiles.reduce((sum, entry) => 
         sum + (entry.originalFile.size - entry.result.compressedSize), 0),
       averageCompressionRatio: completedFiles.length > 0 
-        ? completedFiles.reduce((sum, entry) => sum + entry.result.compressionRatio, 0) / completedFiles.length
+        ? (() => {
+            const totalOriginal = completedFiles.reduce((sum, entry) => sum + entry.originalFile.size, 0);
+            const totalCompressed = completedFiles.reduce((sum, entry) => sum + entry.result.compressedSize, 0);
+            return totalOriginal > 0 ? ((totalOriginal - totalCompressed) / totalOriginal) * 100 : 0;
+          })()
         : 0,
       mostUsedFormat: this.getMostUsedFormat(),
       mostUsedPreset: this.getMostUsedPreset(),

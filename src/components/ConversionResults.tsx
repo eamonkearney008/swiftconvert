@@ -65,30 +65,30 @@ export function ConversionResults({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {results.length}
               </div>
-              <div className="text-xs sm:text-sm text-slate-500">Files Converted</div>
+              <div className="text-sm text-slate-500">Files Converted</div>
             </div>
             <div className="text-center">
-              <div className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {formatFileSize(totalSavings)}
               </div>
-              <div className="text-xs sm:text-sm text-slate-500">Space Saved</div>
+              <div className="text-sm text-slate-500">Space Saved</div>
             </div>
             <div className="text-center">
-              <div className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 {averageCompression.toFixed(1)}%
               </div>
-              <div className="text-xs sm:text-sm text-slate-500">Avg Compression</div>
+              <div className="text-sm text-slate-500">Avg Compression</div>
             </div>
             <div className="text-center">
-              <div className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                 {(totalProcessingTime / 1000).toFixed(1)}s
               </div>
-              <div className="text-xs sm:text-sm text-slate-500">Processing Time</div>
+              <div className="text-sm text-slate-500">Processing Time</div>
             </div>
           </div>
         </CardContent>
@@ -149,24 +149,24 @@ export function ConversionResults({
             
             <CardContent className="space-y-4">
               {/* Compression Stats */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <div className="text-slate-500">Original Size</div>
-                  <div className="font-medium text-xs sm:text-sm">{formatFileSize(result.originalSize)}</div>
+                  <div className="font-medium">{formatFileSize(result.originalSize)}</div>
                 </div>
                 <div>
                   <div className="text-slate-500">Compressed Size</div>
-                  <div className="font-medium text-xs sm:text-sm">{formatFileSize(result.compressedSize)}</div>
+                  <div className="font-medium">{formatFileSize(result.compressedSize)}</div>
                 </div>
                 <div>
                   <div className="text-slate-500">Space Saved</div>
-                  <div className="font-medium text-green-600 dark:text-green-400 text-xs sm:text-sm">
+                  <div className="font-medium text-green-600 dark:text-green-400">
                     {formatFileSize(result.originalSize - result.compressedSize)}
                   </div>
                 </div>
                 <div>
                   <div className="text-slate-500">Compression</div>
-                  <div className="font-medium text-green-600 dark:text-green-400 text-xs sm:text-sm">
+                  <div className="font-medium text-green-600 dark:text-green-400">
                     {result.compressionRatio.toFixed(1)}%
                   </div>
                 </div>

@@ -75,8 +75,11 @@ class AnalyticsManager {
     }
 
     const totalConversions = this.conversionEvents.length;
-    const averageCompressionRatio = 
-      this.conversionEvents.reduce((sum, event) => sum + event.compressionRatio, 0) / totalConversions;
+    const totalOriginalSize = this.conversionEvents.reduce((sum, event) => sum + event.originalSize, 0);
+    const totalConvertedSize = this.conversionEvents.reduce((sum, event) => sum + event.convertedSize, 0);
+    const averageCompressionRatio = totalOriginalSize > 0 
+      ? ((totalOriginalSize - totalConvertedSize) / totalOriginalSize) * 100 
+      : 0;
     
     const totalSpaceSaved = this.conversionEvents.reduce(
       (sum, event) => sum + (event.originalSize - event.convertedSize), 0

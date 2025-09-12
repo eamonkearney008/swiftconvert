@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { memoryManager } from '@/lib/memory-manager';
 
 interface ImagePreviewProps {
   file: File;
@@ -48,8 +49,11 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           return;
         }
 
-        // Check file size - increased limits for better support
-        const maxSize = isMobile ? 20 * 1024 * 1024 : 100 * 1024 * 1024; // 20MB on mobile, 100MB on desktop
+        // Check file size - dynamic limits based on memory pressure
+        const memoryPressure = memoryManager.getMemoryPressureLevel();
+        const maxSize = memoryPressure === 'high' ? 10 * 1024 * 1024 : 
+                       memoryPressure === 'medium' ? 15 * 1024 * 1024 : 
+                       isMobile ? 20 * 1024 * 1024 : 100 * 1024 * 1024;
         
         if (file.size > maxSize) {
           setError(true);
@@ -57,12 +61,13 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           return;
         }
 
-        // For mobile and large files, try to resize first
+        // Use memory manager to determine if we should resize
         let fileToUse = file;
-        if (isMobile && file.size > 5 * 1024 * 1024) { // 5MB threshold for resizing on mobile
+        if (memoryManager.shouldResizeForPreview(file.size)) {
           try {
             fileToUse = await resizeImageForMobile(file);
           } catch (resizeError) {
+            console.warn('Failed to resize image for preview:', resizeError);
             fileToUse = file;
           }
         }
@@ -76,13 +81,16 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           // Create image to test if it loads
           const img = new Image();
           
-          // Set timeout for mobile
+          // Set timeout based on memory pressure
+          const timeoutMs = memoryPressure === 'high' ? 15000 : 
+                           memoryPressure === 'medium' ? 12000 : 
+                           isMobile ? 10000 : 5000;
           const timeout = setTimeout(() => {
             URL.revokeObjectURL(url);
             setObjectURL(null);
             setError(true);
             setIsLoading(false);
-          }, isMobile ? 10000 : 5000); // Longer timeout on mobile
+          }, timeoutMs);
           
           img.onload = () => {
             clearTimeout(timeout);
@@ -116,9 +124,21 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
     loadPreview();
   }, [file, forceReload]);
 
-  // Cleanup object URL on unmount
+  // Cleanup object URL on unmount and register with memory manager
   useEffect(() => {
+    const cleanupCallback = () => {
+      if (objectURL) {
+        URL.revokeObjectURL(objectURL);
+        setObjectURL(null);
+        setPreview(null);
+      }
+    };
+
+    // Register cleanup callback with memory manager
+    memoryManager.registerCleanupCallback(cleanupCallback);
+
     return () => {
+      memoryManager.unregisterCleanupCallback(cleanupCallback);
       if (objectURL) {
         URL.revokeObjectURL(objectURL);
       }
@@ -164,16 +184,17 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             ctx.drawImage(img, 0, 0, width, height);
           }
           
-          // Use higher quality for better results
+          // Use quality based on memory pressure
+          const quality = memoryManager.getRecommendedResizeQuality();
           canvas.toBlob((blob) => {
             if (blob) {
               const resizedFile = new File([blob], file.name, { type: 'image/jpeg' });
-              console.log(`Image resized: ${file.size} → ${resizedFile.size} bytes`);
+              console.log(`Image resized: ${file.size} → ${resizedFile.size} bytes (quality: ${quality})`);
               resolve(resizedFile);
             } else {
               reject(new Error('Failed to create resized image'));
             }
-          }, 'image/jpeg', 0.9); // Increased quality from 0.8 to 0.9
+          }, 'image/jpeg', quality);
         } catch (error) {
           reject(error);
         }
