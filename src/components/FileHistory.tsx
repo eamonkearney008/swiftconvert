@@ -355,39 +355,41 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between min-w-0">
-                    <div className="flex items-center gap-1 min-w-0 flex-1">
-                      <Badge variant="outline" className="text-xs whitespace-nowrap">
+                  <div className="flex items-center justify-between min-w-0 overflow-hidden">
+                    <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden">
+                      <Badge variant="outline" className="text-xs flex-shrink-0">
                         {entry.conversionSettings.format.toUpperCase()}
                       </Badge>
                       {entry.method && (
-                        <>
-                          <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                        <div className="flex items-center gap-1 min-w-0 flex-shrink-0">
+                          <Badge variant="secondary" className="text-xs flex-shrink-0">
                             {entry.method}
                           </Badge>
-                          <span className="text-xs text-green-600 dark:text-green-400 whitespace-nowrap">
+                          <span className="text-xs text-green-600 dark:text-green-400 flex-shrink-0">
                             {Math.min(Math.max(entry.result.compressionRatio, 0), 99.9).toFixed(1)}%
                           </span>
-                        </>
+                        </div>
                       )}
-                      {entry.status === 'completed' && (
+                      <div className="flex items-center gap-1 ml-auto">
+                        {entry.status === 'completed' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDownloadResult(entry)}
+                            className="h-6 w-6 p-0 flex-shrink-0"
+                          >
+                            <Download className="w-3 h-3" />
+                          </Button>
+                        )}
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          onClick={() => handleDownloadResult(entry)}
+                          onClick={() => handleRemoveEntry(entry.id)}
                           className="h-6 w-6 p-0 flex-shrink-0"
                         >
-                          <Download className="w-3 h-3" />
+                          <Trash2 className="w-3 h-3" />
                         </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveEntry(entry.id)}
-                        className="h-6 w-6 p-0 flex-shrink-0"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                      </div>
                     </div>
                     
                     {entry.status === 'completed' && (
