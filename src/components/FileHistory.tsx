@@ -355,18 +355,18 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     </div>
                   </div>
                   
-                  <div className="flex flex-col gap-2 min-w-0 max-w-[120px] sm:max-w-none sm:items-end">
+                  <div className="flex flex-col gap-2 min-w-0 w-full sm:w-auto sm:items-end">
                     {entry.status === 'completed' && (
-                      <div className="text-left sm:text-right">
-                        <div className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
+                      <div className="text-left sm:text-right w-full sm:w-auto">
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400 break-words">
                           {formatFileSize(entry.originalFile.size - entry.result.compressedSize)} saved
                         </div>
-                        <div className="text-xs text-green-600 dark:text-green-400 truncate">
+                        <div className="text-xs text-green-600 dark:text-green-400 break-words">
                           {Math.min(entry.result.compressionRatio, 99.9).toFixed(1)}% reduction
                         </div>
                       </div>
                     )}
-                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap w-full sm:w-auto">
                       <Badge variant="outline" className="text-xs">
                         {entry.conversionSettings.format.toUpperCase()}
                       </Badge>
@@ -424,18 +424,18 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     </div>
                   </div>
                   
-                  <div className="flex flex-col gap-2 min-w-0 max-w-[120px] sm:max-w-none sm:items-end">
+                  <div className="flex flex-col gap-2 min-w-0 w-full sm:w-auto sm:items-end">
                     {entry.status === 'completed' && (
-                      <div className="text-left sm:text-right">
-                        <div className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
+                      <div className="text-left sm:text-right w-full sm:w-auto">
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400 break-words">
                           {formatFileSize(entry.totalOriginalSize - entry.totalCompressedSize)} saved
                         </div>
-                        <div className="text-xs text-green-600 dark:text-green-400 truncate">
+                        <div className="text-xs text-green-600 dark:text-green-400 break-words">
                           {Math.min(entry.averageCompressionRatio, 99.9).toFixed(1)}% reduction
                         </div>
                       </div>
                     )}
-                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap w-full sm:w-auto">
                       <Badge variant="outline" className="text-xs">
                         {entry.settings.format.toUpperCase()}
                       </Badge>
