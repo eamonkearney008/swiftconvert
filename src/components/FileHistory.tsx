@@ -355,28 +355,30 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between min-w-0 overflow-hidden">
-                    <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden">
-                      <Badge variant="outline" className="text-xs flex-shrink-0">
-                        {entry.conversionSettings.format.toUpperCase()}
-                      </Badge>
-                      {entry.method && (
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <Badge variant="secondary" className="text-xs flex-shrink-0">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <Badge variant="outline" className="text-xs">
+                          {entry.conversionSettings.format.toUpperCase()}
+                        </Badge>
+                        {entry.method && (
+                          <Badge variant="secondary" className="text-xs">
                             {entry.method}
                           </Badge>
-                          <span className="text-xs text-green-600 dark:text-green-400 flex-shrink-0">
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {entry.method && (
+                          <span className="text-xs text-green-600 dark:text-green-400">
                             {Math.min(Math.max(entry.result.compressionRatio, 0), 99.9).toFixed(1)}%
                           </span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-1 ml-auto">
+                        )}
                         {entry.status === 'completed' && (
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleDownloadResult(entry)}
-                            className="h-6 w-6 p-0 flex-shrink-0"
+                            className="h-6 w-6 p-0"
                           >
                             <Download className="w-3 h-3" />
                           </Button>
@@ -385,7 +387,7 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveEntry(entry.id)}
-                          className="h-6 w-6 p-0 flex-shrink-0"
+                          className="h-6 w-6 p-0"
                         >
                           <Trash2 className="w-3 h-3" />
                         </Button>

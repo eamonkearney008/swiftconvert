@@ -1322,16 +1322,20 @@ function HomeContent() {
                       </div>
                       <div className="space-y-2">
                         {entry.files.map((file: any, fileIndex: number) => (
-                          <div key={fileIndex} className="flex justify-between items-center text-sm bg-slate-50 dark:bg-slate-700 rounded px-3 py-2 min-w-0 overflow-hidden">
-                            <span className="text-slate-900 dark:text-white truncate flex-1 min-w-0 mr-2">{file.name}</span>
-                            <div className="flex items-center space-x-1 text-slate-500 dark:text-slate-400 flex-shrink-0">
-                              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded text-xs flex-shrink-0">
-                                {file.format.toUpperCase()}
-                              </span>
-                              <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs flex-shrink-0">
-                                {file.method}
-                              </span>
-                              <span className="text-xs text-green-600 dark:text-green-400 flex-shrink-0">
+                          <div key={fileIndex} className="bg-slate-50 dark:bg-slate-700 rounded px-3 py-2">
+                            <div className="flex justify-between items-center text-sm mb-1">
+                              <span className="text-slate-900 dark:text-white truncate flex-1 min-w-0 mr-2">{file.name}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-1 text-slate-500 dark:text-slate-400">
+                                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded text-xs">
+                                  {file.format.toUpperCase()}
+                                </span>
+                                <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs">
+                                  {file.method}
+                                </span>
+                              </div>
+                              <span className="text-xs text-green-600 dark:text-green-400 ml-2">
                                 {((file.originalSize - file.convertedSize) / file.originalSize * 100).toFixed(1)}%
                               </span>
                             </div>
