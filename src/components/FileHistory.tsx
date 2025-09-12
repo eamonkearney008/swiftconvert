@@ -360,6 +360,16 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                       <Badge variant="outline" className="text-xs">
                         {entry.conversionSettings.format.toUpperCase()}
                       </Badge>
+                      {entry.method && (
+                        <>
+                          <Badge variant="secondary" className="text-xs">
+                            {entry.method}
+                          </Badge>
+                          <span className="text-xs text-green-600 dark:text-green-400 truncate max-w-[50px]">
+                            {Math.min(Math.max(entry.result.compressionRatio, 0), 99.9).toFixed(1)}%
+                          </span>
+                        </>
+                      )}
                       {entry.status === 'completed' && (
                         <Button
                           variant="outline"

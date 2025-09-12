@@ -14,6 +14,7 @@ export interface FileHistoryEntry {
   batchId?: string;
   status: 'completed' | 'failed' | 'cancelled';
   error?: string;
+  method?: string;
 }
 
 export interface BatchHistoryEntry {
@@ -67,7 +68,8 @@ export class FileManager {
     result: ConversionResult,
     batchId?: string,
     status: 'completed' | 'failed' | 'cancelled' = 'completed',
-    error?: string
+    error?: string,
+    method?: string
   ): string {
     const entry: FileHistoryEntry = {
       id: this.generateId(),
@@ -83,6 +85,7 @@ export class FileManager {
       batchId,
       status,
       error,
+      method,
     };
 
     this.fileHistory.unshift(entry);
