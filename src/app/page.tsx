@@ -1322,16 +1322,16 @@ function HomeContent() {
                       </div>
                       <div className="space-y-2">
                         {entry.files.map((file: any, fileIndex: number) => (
-                          <div key={fileIndex} className="flex justify-between items-center text-sm bg-slate-50 dark:bg-slate-700 rounded px-3 py-2">
-                            <span className="text-slate-900 dark:text-white">{file.name}</span>
-                            <div className="flex items-center space-x-4 text-slate-500 dark:text-slate-400 min-w-0">
-                              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded text-xs">
+                          <div key={fileIndex} className="flex justify-between items-center text-sm bg-slate-50 dark:bg-slate-700 rounded px-3 py-2 min-w-0">
+                            <span className="text-slate-900 dark:text-white truncate flex-1 min-w-0 mr-2">{file.name}</span>
+                            <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400 min-w-0 flex-shrink-0">
+                              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded text-xs whitespace-nowrap">
                                 {file.format.toUpperCase()}
                               </span>
-                              <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs">
+                              <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs whitespace-nowrap">
                                 {file.method}
                               </span>
-                              <span className="font-medium text-green-600 dark:text-green-400 truncate max-w-[50px]">
+                              <span className="font-medium text-green-600 dark:text-green-400 whitespace-nowrap">
                                 {((file.originalSize - file.convertedSize) / file.originalSize * 100).toFixed(1)}%
                               </span>
                             </div>
