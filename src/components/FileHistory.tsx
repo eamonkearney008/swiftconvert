@@ -416,7 +416,7 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                         <span>•</span>
                         <span>{entry.completedFiles}/{entry.totalFiles} files</span>
                         <span>•</span>
-                        <span>{Math.round(entry.averageCompressionRatio)}% compression</span>
+                        <span className="truncate max-w-[60px]">{Math.round(entry.averageCompressionRatio)}% compression</span>
                         <span>•</span>
                         <Badge className={getStatusColor(entry.status)}>
                           {entry.status}
