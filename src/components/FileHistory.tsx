@@ -355,19 +355,19 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     </div>
                   </div>
                   
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex flex-col sm:items-end gap-2 min-w-0">
                     {entry.status === 'completed' && (
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-green-600 dark:text-green-400">
+                      <div className="text-right sm:text-right text-left">
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
                           {formatFileSize(entry.originalFile.size - entry.result.compressedSize)} saved
                         </div>
-                        <div className="text-xs text-slate-500">
-                          {entry.result.compressionRatio.toFixed(1)}% reduction
+                        <div className="text-xs text-slate-500 truncate">
+                          {Math.min(entry.result.compressionRatio, 99.9).toFixed(1)}% reduction
                         </div>
                       </div>
                     )}
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                      <Badge variant="outline" className="text-xs">
                         {entry.conversionSettings.format.toUpperCase()}
                       </Badge>
                       {entry.status === 'completed' && (
@@ -375,16 +375,18 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                           variant="outline"
                           size="sm"
                           onClick={() => handleDownloadResult(entry)}
+                          className="h-6 w-6 p-0"
                         >
-                          <Download className="w-4 h-4" />
+                          <Download className="w-3 h-3" />
                         </Button>
                       )}
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveEntry(entry.id)}
+                        className="h-6 w-6 p-0"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
                   </div>
@@ -422,27 +424,28 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     </div>
                   </div>
                   
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex flex-col sm:items-end gap-2 min-w-0">
                     {entry.status === 'completed' && (
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-green-600 dark:text-green-400">
+                      <div className="text-right sm:text-right text-left">
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
                           {formatFileSize(entry.totalOriginalSize - entry.totalCompressedSize)} saved
                         </div>
-                        <div className="text-xs text-slate-500">
-                          {entry.averageCompressionRatio.toFixed(1)}% reduction
+                        <div className="text-xs text-slate-500 truncate">
+                          {Math.min(entry.averageCompressionRatio, 99.9).toFixed(1)}% reduction
                         </div>
                       </div>
                     )}
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                      <Badge variant="outline" className="text-xs">
                         {entry.settings.format.toUpperCase()}
                       </Badge>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveEntry(entry.id)}
+                        className="h-6 w-6 p-0"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
                   </div>

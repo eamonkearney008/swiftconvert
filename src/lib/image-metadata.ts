@@ -345,10 +345,16 @@ export function formatFileSize(bytes: number): string {
 }
 
 /**
- * Calculate compression ratio
+ * Calculate compression ratio with bounds checking
  */
 export function calculateCompressionRatio(originalSize: number, compressedSize: number): number {
   if (originalSize === 0) return 0;
-  return ((originalSize - compressedSize) / originalSize) * 100;
+  if (compressedSize < 0) return 0;
+  if (compressedSize > originalSize) return 0; // Can't compress to larger size
+  
+  const ratio = (originalSize - compressedSize) / originalSize;
+  // Ensure ratio is between 0 and 1 (0% to 100% compression)
+  const clampedRatio = Math.max(0, Math.min(1, ratio));
+  return clampedRatio * 100;
 }
 

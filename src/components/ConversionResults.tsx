@@ -48,7 +48,15 @@ export function ConversionResults({
   const totalOriginalSize = results.reduce((sum, result) => sum + result.originalSize, 0);
   const totalCompressedSize = results.reduce((sum, result) => sum + result.compressedSize, 0);
   const totalSavings = totalOriginalSize - totalCompressedSize;
-  const averageCompression = totalOriginalSize > 0 ? (totalSavings / totalOriginalSize) * 100 : 0;
+  
+  // Calculate average compression with validation and bounds checking
+  let averageCompression = 0;
+  if (totalOriginalSize > 0 && totalCompressedSize >= 0) {
+    const ratio = totalSavings / totalOriginalSize;
+    // Ensure the ratio is between 0 and 1 (0% to 100% compression)
+    averageCompression = Math.max(0, Math.min(1, ratio)) * 100;
+  }
+  
   const totalProcessingTime = results.reduce((sum, result) => sum + result.processingTime, 0);
 
   return (
@@ -167,7 +175,7 @@ export function ConversionResults({
                 <div>
                   <div className="text-slate-500">Compression</div>
                   <div className="font-medium text-green-600 dark:text-green-400">
-                    {result.compressionRatio.toFixed(1)}%
+                    {Math.min(Math.max(result.compressionRatio, 0), 99.9).toFixed(1)}%
                   </div>
                 </div>
               </div>
@@ -176,10 +184,10 @@ export function ConversionResults({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Compression Ratio</span>
-                  <span>{result.compressionRatio.toFixed(1)}%</span>
+                  <span>{Math.min(Math.max(result.compressionRatio, 0), 99.9).toFixed(1)}%</span>
                 </div>
                 <Progress 
-                  value={result.compressionRatio} 
+                  value={Math.min(Math.max(result.compressionRatio, 0), 100)} 
                   className="h-2"
                 />
               </div>
@@ -210,7 +218,7 @@ export function ConversionResults({
                         {formatFileSize(result.compressedSize)}
                       </div>
                       <div className="text-sm text-green-600 dark:text-green-400">
-                        {result.compressionRatio.toFixed(1)}% smaller
+                        {Math.min(Math.max(result.compressionRatio, 0), 99.9).toFixed(1)}% smaller
                       </div>
                     </div>
                   </div>
