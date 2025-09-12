@@ -335,7 +335,7 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
               filteredFileHistory.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg overflow-hidden"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {getStatusIcon(entry.status)}
@@ -361,7 +361,7 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                         <div className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
                           {formatFileSize(entry.originalFile.size - entry.result.compressedSize)} saved
                         </div>
-                        <div className="text-xs text-slate-500 truncate">
+                        <div className="text-xs text-green-600 dark:text-green-400 truncate">
                           {Math.min(entry.result.compressionRatio, 99.9).toFixed(1)}% reduction
                         </div>
                       </div>
@@ -404,7 +404,7 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
               filteredBatchHistory.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg overflow-hidden"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {getStatusIcon(entry.status)}
@@ -430,7 +430,7 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                         <div className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
                           {formatFileSize(entry.totalOriginalSize - entry.totalCompressedSize)} saved
                         </div>
-                        <div className="text-xs text-slate-500 truncate">
+                        <div className="text-xs text-green-600 dark:text-green-400 truncate">
                           {Math.min(entry.averageCompressionRatio, 99.9).toFixed(1)}% reduction
                         </div>
                       </div>
