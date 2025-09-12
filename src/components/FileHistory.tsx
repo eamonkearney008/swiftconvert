@@ -355,17 +355,17 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
+                  <div className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center gap-1 min-w-0 flex-1">
+                      <Badge variant="outline" className="text-xs whitespace-nowrap">
                         {entry.conversionSettings.format.toUpperCase()}
                       </Badge>
                       {entry.method && (
                         <>
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs whitespace-nowrap">
                             {entry.method}
                           </Badge>
-                          <span className="text-xs text-green-600 dark:text-green-400 truncate max-w-[50px]">
+                          <span className="text-xs text-green-600 dark:text-green-400 whitespace-nowrap">
                             {Math.min(Math.max(entry.result.compressionRatio, 0), 99.9).toFixed(1)}%
                           </span>
                         </>
@@ -375,7 +375,7 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                           variant="outline"
                           size="sm"
                           onClick={() => handleDownloadResult(entry)}
-                          className="h-6 w-6 p-0"
+                          className="h-6 w-6 p-0 flex-shrink-0"
                         >
                           <Download className="w-3 h-3" />
                         </Button>
@@ -384,14 +384,14 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveEntry(entry.id)}
-                        className="h-6 w-6 p-0"
+                        className="h-6 w-6 p-0 flex-shrink-0"
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
                     
                     {entry.status === 'completed' && (
-                      <div className="text-right max-w-[100px] overflow-hidden">
+                      <div className="text-right max-w-[100px] overflow-hidden flex-shrink-0 ml-2">
                         <div className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
                           {formatFileSize(entry.originalFile.size - entry.result.compressedSize)} saved
                         </div>
