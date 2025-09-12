@@ -172,9 +172,9 @@ export function ConversionResults({
                     {formatFileSize(result.originalSize - result.compressedSize)}
                   </div>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-slate-500">Compression</div>
-                  <div className="font-medium text-green-600 dark:text-green-400">
+                  <div className="font-medium text-green-600 dark:text-green-400 truncate max-w-[80px]">
                     {Math.min(Math.max(result.compressionRatio, 0), 99.9).toFixed(1)}%
                   </div>
                 </div>
@@ -184,7 +184,9 @@ export function ConversionResults({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Compression Ratio</span>
-                  <span>{Math.min(Math.max(result.compressionRatio, 0), 99.9).toFixed(1)}%</span>
+                  <span className="text-green-600 dark:text-green-400 truncate max-w-[60px]">
+                    {Math.min(Math.max(result.compressionRatio, 0), 99.9).toFixed(1)}%
+                  </span>
                 </div>
                 <Progress 
                   value={Math.min(Math.max(result.compressionRatio, 0), 100)} 
@@ -217,7 +219,7 @@ export function ConversionResults({
                       <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                         {formatFileSize(result.compressedSize)}
                       </div>
-                      <div className="text-sm text-green-600 dark:text-green-400">
+                      <div className="text-sm text-green-600 dark:text-green-400 truncate max-w-[120px]">
                         {Math.min(Math.max(result.compressionRatio, 0), 99.9).toFixed(1)}% smaller
                       </div>
                     </div>
