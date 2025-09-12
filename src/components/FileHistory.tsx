@@ -355,9 +355,9 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     </div>
                   </div>
                   
-                  <div className="flex flex-col sm:items-end gap-2 min-w-0">
+                  <div className="flex flex-col gap-2 min-w-0 max-w-[120px] sm:max-w-none sm:items-end">
                     {entry.status === 'completed' && (
-                      <div className="text-right sm:text-right text-left">
+                      <div className="text-left sm:text-right">
                         <div className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
                           {formatFileSize(entry.originalFile.size - entry.result.compressedSize)} saved
                         </div>
@@ -424,9 +424,9 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     </div>
                   </div>
                   
-                  <div className="flex flex-col sm:items-end gap-2 min-w-0">
+                  <div className="flex flex-col gap-2 min-w-0 max-w-[120px] sm:max-w-none sm:items-end">
                     {entry.status === 'completed' && (
-                      <div className="text-right sm:text-right text-left">
+                      <div className="text-left sm:text-right">
                         <div className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
                           {formatFileSize(entry.totalOriginalSize - entry.totalCompressedSize)} saved
                         </div>
