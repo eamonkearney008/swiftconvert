@@ -381,11 +381,11 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     </div>
                     
                     {entry.status === 'completed' && (
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-green-600 dark:text-green-400">
+                      <div className="text-right max-w-[100px] overflow-hidden">
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
                           {formatFileSize(entry.originalFile.size - entry.result.compressedSize)} saved
                         </div>
-                        <div className="text-xs text-green-600 dark:text-green-400">
+                        <div className="text-xs text-green-600 dark:text-green-400 truncate">
                           {Math.min(entry.result.compressionRatio, 99.9).toFixed(1)}% reduction
                         </div>
                       </div>
@@ -441,11 +441,11 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     </div>
                     
                     {entry.status === 'completed' && (
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-green-600 dark:text-green-400">
+                      <div className="text-right max-w-[100px] overflow-hidden">
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400 truncate">
                           {formatFileSize(entry.totalOriginalSize - entry.totalCompressedSize)} saved
                         </div>
-                        <div className="text-xs text-green-600 dark:text-green-400">
+                        <div className="text-xs text-green-600 dark:text-green-400 truncate">
                           {Math.min(entry.averageCompressionRatio, 99.9).toFixed(1)}% reduction
                         </div>
                       </div>
