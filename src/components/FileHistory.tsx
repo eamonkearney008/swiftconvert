@@ -341,44 +341,52 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     {getStatusIcon(entry.status)}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{entry.originalFile.name}</p>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-slate-500">
-                        <div className="flex items-center gap-2">
-                          <span>{formatDate(entry.timestamp)}</span>
-                          <span className="hidden sm:inline">•</span>
-                          <span>{formatFileSize(entry.originalFile.size)}</span>
-                          <span>→</span>
-                          <span>{formatFileSize(entry.result.compressedSize)}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="hidden sm:inline">•</span>
-                          <Badge className={getStatusColor(entry.status)}>
-                            {entry.status}
-                          </Badge>
-                        </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <span>{formatDate(entry.timestamp)}</span>
+                        <span>•</span>
+                        <span>{formatFileSize(entry.originalFile.size)}</span>
+                        <span>→</span>
+                        <span>{formatFileSize(entry.result.compressedSize)}</span>
+                        <span>•</span>
+                        <Badge className={getStatusColor(entry.status)}>
+                          {entry.status}
+                        </Badge>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">
-                      {entry.conversionSettings.format.toUpperCase()}
-                    </Badge>
+                  <div className="flex flex-col items-end gap-2">
                     {entry.status === 'completed' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownloadResult(entry)}
-                      >
-                        <Download className="w-4 h-4" />
-                      </Button>
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400">
+                          {formatFileSize(entry.originalFile.size - entry.result.compressedSize)} saved
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {entry.result.compressionRatio.toFixed(1)}% reduction
+                        </div>
+                      </div>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveEntry(entry.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">
+                        {entry.conversionSettings.format.toUpperCase()}
+                      </Badge>
+                      {entry.status === 'completed' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownloadResult(entry)}
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveEntry(entry.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))
@@ -400,35 +408,43 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                     {getStatusIcon(entry.status)}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">Batch {entry.id.slice(-8)}</p>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-slate-500">
-                        <div className="flex items-center gap-2">
-                          <span>{formatDate(entry.timestamp)}</span>
-                          <span className="hidden sm:inline">•</span>
-                          <span>{entry.completedFiles}/{entry.totalFiles} files</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="hidden sm:inline">•</span>
-                          <span>{Math.round(entry.averageCompressionRatio)}% compression</span>
-                          <span className="hidden sm:inline">•</span>
-                          <Badge className={getStatusColor(entry.status)}>
-                            {entry.status}
-                          </Badge>
-                        </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <span>{formatDate(entry.timestamp)}</span>
+                        <span>•</span>
+                        <span>{entry.completedFiles}/{entry.totalFiles} files</span>
+                        <span>•</span>
+                        <span>{Math.round(entry.averageCompressionRatio)}% compression</span>
+                        <span>•</span>
+                        <Badge className={getStatusColor(entry.status)}>
+                          {entry.status}
+                        </Badge>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">
-                      {entry.settings.format.toUpperCase()}
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveEntry(entry.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                  <div className="flex flex-col items-end gap-2">
+                    {entry.status === 'completed' && (
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400">
+                          {formatFileSize(entry.totalOriginalSize - entry.totalCompressedSize)} saved
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {entry.averageCompressionRatio.toFixed(1)}% reduction
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">
+                        {entry.settings.format.toUpperCase()}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveEntry(entry.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))
