@@ -361,7 +361,7 @@ export function FileHistory({ className = '' }: FileHistoryProps) {
                         {entry.conversionSettings.format.toUpperCase()}
                       </Badge>
                       {entry.method && (
-                        <div className="flex items-center gap-1 min-w-0 flex-shrink-0 max-w-[200px] overflow-hidden">
+                        <div className="flex items-center gap-1 flex-shrink-0">
                           <Badge variant="secondary" className="text-xs flex-shrink-0">
                             {entry.method}
                           </Badge>
