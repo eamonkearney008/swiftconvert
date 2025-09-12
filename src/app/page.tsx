@@ -1331,9 +1331,6 @@ function HomeContent() {
                               <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs whitespace-nowrap">
                                 {file.method}
                               </span>
-                              <span className="font-medium text-green-600 dark:text-green-400 whitespace-nowrap">
-                                {((file.originalSize - file.convertedSize) / file.originalSize * 100).toFixed(1)}%
-                              </span>
                             </div>
                           </div>
                         ))}
