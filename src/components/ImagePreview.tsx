@@ -106,6 +106,8 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             setIsLoading(false);
             // Signal that preview failed due to memory constraints
             memoryManager.signalPreviewFailure();
+            // Force high memory pressure mode
+            memoryManager.forceHighMemoryPressure();
           };
           
           img.src = url;
@@ -116,6 +118,8 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           setIsLoading(false);
           // Signal that preview failed due to memory constraints
           memoryManager.signalPreviewFailure();
+          // Force high memory pressure mode
+          memoryManager.forceHighMemoryPressure();
         }
 
       } catch (error) {
@@ -124,6 +128,8 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
         setIsLoading(false);
         // Signal that preview failed due to memory constraints
         memoryManager.signalPreviewFailure();
+        // Force high memory pressure mode
+        memoryManager.forceHighMemoryPressure();
       }
     };
 

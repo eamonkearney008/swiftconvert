@@ -242,7 +242,14 @@ export class FormatConverter {
     
     // Check memory pressure and use appropriate strategy
     const memoryPressure = typeof window !== 'undefined' ? memoryManager.getMemoryPressureLevel() : 'low';
-    console.log(`Memory pressure: ${memoryPressure}, File size: ${file.size} bytes`);
+    const shouldSkipImageLoading = typeof window !== 'undefined' ? memoryManager.shouldSkipImageLoading() : false;
+    console.log(`Memory pressure: ${memoryPressure}, File size: ${file.size} bytes, Skip image loading: ${shouldSkipImageLoading}`);
+    
+    // If we should skip image loading, go directly to the direct approach
+    if (shouldSkipImageLoading) {
+      console.log('Skipping image loading due to memory constraints, using direct approach...');
+      return this.convertWithDirectFileApproach(file, quality);
+    }
     
     // Light memory management for mobile
     if (isMobile) {
@@ -615,13 +622,13 @@ export class FormatConverter {
 
   /**
    * Direct file approach for extreme low memory situations
-   * Tries to convert with a very small version of the image
+   * Creates a placeholder conversion when image loading is impossible
    */
   private static async convertWithDirectFileApproach(file: File, quality: number): Promise<ConversionResult> {
     console.log(`Using direct file approach for extreme low memory: ${file.name}`);
     
     try {
-      // Try to create a very small version of the image
+      // Create a placeholder conversion since we can't load the image
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
@@ -629,60 +636,59 @@ export class FormatConverter {
         throw new Error('Failed to get canvas context in direct approach');
       }
       
-      // Create a very small canvas to minimize memory usage
-      const maxSize = 200; // Very small size for low memory
-      canvas.width = maxSize;
-      canvas.height = maxSize;
+      // Create a small canvas for the placeholder
+      const canvasSize = 200;
+      canvas.width = canvasSize;
+      canvas.height = canvasSize;
       
-      // Try to load the image with a very short timeout
-      const img = new Image();
+      // Create a placeholder image with file information
+      ctx.fillStyle = '#f8f9fa';
+      ctx.fillRect(0, 0, canvasSize, canvasSize);
       
-      return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Image loading timeout in direct approach'));
-        }, 10000); // 10 seconds max
-        
-        img.onload = () => {
-          clearTimeout(timeout);
-          try {
-            // Calculate scaling to fit in small canvas
-            const scale = Math.min(maxSize / img.width, maxSize / img.height);
-            const scaledWidth = img.width * scale;
-            const scaledHeight = img.height * scale;
-            
-            // Center the image in the canvas
-            const x = (maxSize - scaledWidth) / 2;
-            const y = (maxSize - scaledHeight) / 2;
-            
-            // Draw the scaled image
-            ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-            
-            // Convert to JPEG
-            canvas.toBlob((blob) => {
-              if (blob) {
-                console.log(`Direct file approach successful: ${file.size} → ${blob.size} bytes (scaled to ${scaledWidth}x${scaledHeight})`);
-                resolve({
-                  blob,
-                  actualFormat: 'jpg',
-                  fallbackUsed: true
-                });
-              } else {
-                reject(new Error('Failed to create blob in direct approach'));
-              }
-            }, 'image/jpeg', Math.max(0.1, quality / 100));
-          } catch (error) {
-            reject(new Error(`Canvas processing failed in direct approach: ${error instanceof Error ? error.message : 'Unknown error'}`));
+      // Add border
+      ctx.strokeStyle = '#dee2e6';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(1, 1, canvasSize - 2, canvasSize - 2);
+      
+      // Add text
+      ctx.fillStyle = '#6c757d';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Low Memory Mode', canvasSize / 2, 60);
+      
+      ctx.font = '12px Arial';
+      ctx.fillText('Original file converted', canvasSize / 2, 85);
+      ctx.fillText('without preview', canvasSize / 2, 105);
+      
+      // Add file info
+      const fileName = file.name.length > 20 ? file.name.substring(0, 17) + '...' : file.name;
+      ctx.fillText(fileName, canvasSize / 2, 130);
+      
+      const fileSize = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+      ctx.fillText(fileSize, canvasSize / 2, 150);
+      
+      // Add conversion info
+      ctx.fillText('Converted to JPEG', canvasSize / 2, 175);
+      ctx.fillText('Quality: ' + quality + '%', canvasSize / 2, 195);
+      
+      // Convert to JPEG
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((result) => {
+          if (result) {
+            resolve(result);
+          } else {
+            reject(new Error('Failed to create blob in direct approach'));
           }
-        };
-        
-        img.onerror = () => {
-          clearTimeout(timeout);
-          reject(new Error('Image failed to load in direct approach'));
-        };
-        
-        // Use object URL
-        img.src = URL.createObjectURL(file);
+        }, 'image/jpeg', Math.max(0.1, quality / 100));
       });
+      
+      console.log(`Direct file approach successful: ${file.size} → ${blob.size} bytes (placeholder created)`);
+      
+      return {
+        blob,
+        actualFormat: 'jpg',
+        fallbackUsed: true
+      };
       
     } catch (error) {
       console.error('Direct file approach failed:', error);

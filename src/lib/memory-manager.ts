@@ -362,6 +362,17 @@ export class MemoryManager {
     // Skip image loading if we're on mobile with high memory pressure
     return isMobile && memoryPressure === 'high';
   }
+
+  /**
+   * Force high memory pressure mode
+   */
+  forceHighMemoryPressure() {
+    if (typeof window === 'undefined') return;
+    
+    console.log('Forcing high memory pressure mode');
+    this.memoryPressureLevel = 'high';
+    this.triggerAggressiveCleanup();
+  }
 }
 
 // Export singleton instance
