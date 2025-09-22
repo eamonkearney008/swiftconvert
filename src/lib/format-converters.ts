@@ -239,6 +239,10 @@ export class FormatConverter {
     const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
     const useOffscreenCanvas = !isMobile && typeof OffscreenCanvas !== 'undefined';
     
+    // Check memory pressure and use appropriate strategy
+    const memoryPressure = typeof window !== 'undefined' ? memoryManager.getMemoryPressureLevel() : 'low';
+    console.log(`Memory pressure: ${memoryPressure}, File size: ${file.size} bytes`);
+    
     // Light memory management for mobile
     if (isMobile) {
       // Force garbage collection hint (but preserve previews)
@@ -256,8 +260,18 @@ export class FormatConverter {
     const img = new Image();
     
     return new Promise((resolve, reject) => {
+      // Set timeout based on memory pressure
+      const timeoutMs = memoryPressure === 'high' ? 30000 : 
+                       memoryPressure === 'medium' ? 20000 : 
+                       isMobile ? 15000 : 10000;
+      
+      const timeout = setTimeout(() => {
+        reject(new Error('Image loading timeout - memory pressure too high'));
+      }, timeoutMs);
+      
       img.onload = () => {
         try {
+          clearTimeout(timeout);
           console.log(`Image loaded: ${img.width}x${img.height}`);
           
           // Set canvas dimensions
@@ -339,18 +353,106 @@ export class FormatConverter {
       };
       
       img.onerror = (error) => {
+        clearTimeout(timeout);
         console.error('Image load error:', error);
-        // On mobile, try to provide more specific error information
-        const errorMsg = isMobile 
-          ? 'Failed to load image on mobile - may be due to memory constraints or unsupported format'
-          : 'Failed to load image';
-        reject(new Error(errorMsg));
+        console.log('Attempting fallback conversion method...');
+        
+        // Try fallback conversion method for memory-constrained situations
+        this.convertWithFallbackMethod(file, format, quality)
+          .then(resolve)
+          .catch((fallbackError) => {
+            console.error('Fallback conversion also failed:', fallbackError);
+            const errorMsg = isMobile 
+              ? 'Failed to load image on mobile - may be due to memory constraints or unsupported format'
+              : 'Failed to load image';
+            reject(new Error(errorMsg));
+          });
       };
       
       // Load image directly
       console.log('Loading image...');
       img.src = URL.createObjectURL(file);
     });
+  }
+
+  /**
+   * Fallback conversion method for memory-constrained situations
+   * Uses createImageBitmap for better memory efficiency
+   */
+  private static async convertWithFallbackMethod(file: File, format: string, quality: number): Promise<ConversionResult> {
+    console.log(`Using fallback conversion method for ${file.name}`);
+    
+    try {
+      // Use createImageBitmap for better memory efficiency
+      const imageBitmap = await createImageBitmap(file);
+      console.log(`ImageBitmap created: ${imageBitmap.width}x${imageBitmap.height}`);
+      
+      // Create canvas
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        throw new Error('Failed to get canvas context');
+      }
+      
+      // Set canvas dimensions
+      canvas.width = imageBitmap.width;
+      canvas.height = imageBitmap.height;
+      
+      // Draw image bitmap to canvas
+      ctx.drawImage(imageBitmap, 0, 0);
+      
+      // Clean up image bitmap immediately
+      imageBitmap.close();
+      
+      // Handle format-specific MIME types
+      let mimeType: string;
+      switch (format) {
+        case 'jpg':
+        case 'jpeg':
+          mimeType = 'image/jpeg';
+          break;
+        case 'png':
+          mimeType = 'image/png';
+          break;
+        case 'webp':
+          mimeType = 'image/webp';
+          break;
+        case 'avif':
+          mimeType = 'image/avif';
+          break;
+        default:
+          mimeType = 'image/jpeg';
+      }
+      
+      // Convert to blob with appropriate quality
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((result) => {
+          if (result) {
+            resolve(result);
+          } else {
+            reject(new Error('Failed to create blob from canvas'));
+          }
+        }, mimeType, quality / 100);
+      });
+      
+      console.log(`Fallback conversion successful: ${file.size} → ${blob.size} bytes`);
+      
+      return {
+        blob,
+        originalFile: file,
+        originalSize: file.size,
+        convertedSize: blob.size,
+        format,
+        method: 'fallback-memory-efficient',
+        compressionRatio: (file.size - blob.size) / file.size,
+        processingTime: 0 // Will be set by caller
+      };
+      
+    } catch (error) {
+      console.error('Fallback conversion failed:', error);
+      throw new Error(`Fallback conversion failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 }
 

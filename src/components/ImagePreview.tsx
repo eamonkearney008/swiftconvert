@@ -281,6 +281,9 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             <p className="text-xs text-green-600 dark:text-green-400 mt-1 font-medium">
               ✅ File will still be converted successfully
             </p>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+              💡 Using memory-efficient conversion method
+            </p>
             {file.size > 10 * 1024 * 1024 && (
               <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
                 Large file ({Math.round(file.size / 1024 / 1024)}MB) - preview may be slow

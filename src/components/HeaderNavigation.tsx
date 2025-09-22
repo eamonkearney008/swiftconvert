@@ -1,8 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { memoryManager } from '@/lib/memory-manager';
 
 export default function HeaderNavigation() {
+  useEffect(() => {
+    const updateMemoryStatus = () => {
+      const memoryStatusElement = document.getElementById('memory-status');
+      if (memoryStatusElement) {
+        const memoryPressure = memoryManager.getMemoryPressureLevel();
+        if (memoryPressure === 'high') {
+          memoryStatusElement.textContent = '⚠️ Low memory mode';
+          memoryStatusElement.className = 'text-xs text-orange-600 dark:text-orange-400 hidden sm:inline';
+        } else if (memoryPressure === 'medium') {
+          memoryStatusElement.textContent = '⚡ Memory optimized';
+          memoryStatusElement.className = 'text-xs text-blue-600 dark:text-blue-400 hidden sm:inline';
+        } else {
+          memoryStatusElement.textContent = '';
+          memoryStatusElement.className = 'hidden';
+        }
+      }
+    };
+
+    // Update memory status on mount and periodically
+    updateMemoryStatus();
+    const interval = setInterval(updateMemoryStatus, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex items-center">
       {/* Navigation */}
@@ -40,6 +66,9 @@ export default function HeaderNavigation() {
         <div className="text-xs text-slate-500 dark:text-slate-500">
           <span className="hidden sm:inline">Ctrl+O to open files</span>
           <span className="sm:hidden">Tap to upload</span>
+        </div>
+        <div className="text-xs text-orange-600 dark:text-orange-400 hidden sm:inline" id="memory-status">
+          {/* Memory status will be updated by JavaScript */}
         </div>
       </div>
     </div>
