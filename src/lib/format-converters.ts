@@ -261,13 +261,20 @@ export class FormatConverter {
     const img = new Image();
     
     return new Promise((resolve, reject) => {
-      // Set timeout based on memory pressure
-      const timeoutMs = memoryPressure === 'high' ? 30000 : 
-                       memoryPressure === 'medium' ? 20000 : 
-                       isMobile ? 15000 : 10000;
+      // Set timeout based on memory pressure - longer timeouts for mobile
+      const timeoutMs = memoryPressure === 'high' ? 45000 : 
+                       memoryPressure === 'medium' ? 35000 : 
+                       isMobile ? 30000 : 15000;
       
       const timeout = setTimeout(() => {
-        reject(new Error('Image loading timeout - memory pressure too high'));
+        console.error(`Image loading timeout after ${timeoutMs}ms - trying fallback method`);
+        // Instead of rejecting immediately, try the fallback method
+        this.convertWithFallbackMethod(file, format, quality)
+          .then(resolve)
+          .catch((fallbackError) => {
+            console.error('Fallback conversion also failed after timeout:', fallbackError);
+            reject(new Error(`Image loading timeout and fallback failed: ${fallbackError.message}`));
+          });
       }, timeoutMs);
       
       img.onload = () => {
@@ -384,71 +391,212 @@ export class FormatConverter {
     console.log(`Using fallback conversion method for ${file.name}`);
     
     try {
-      // Use createImageBitmap for better memory efficiency
-      const imageBitmap = await createImageBitmap(file);
-      console.log(`ImageBitmap created: ${imageBitmap.width}x${imageBitmap.height}`);
+      // First try createImageBitmap approach
+      try {
+        const imageBitmap = await createImageBitmap(file);
+        console.log(`ImageBitmap created: ${imageBitmap.width}x${imageBitmap.height}`);
+        
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          throw new Error('Failed to get canvas context');
+        }
+        
+        // Set canvas dimensions
+        canvas.width = imageBitmap.width;
+        canvas.height = imageBitmap.height;
+        
+        // Draw image bitmap to canvas
+        ctx.drawImage(imageBitmap, 0, 0);
+        
+        // Clean up image bitmap immediately
+        imageBitmap.close();
+        
+        // Handle format-specific MIME types
+        let mimeType: string;
+        switch (format) {
+          case 'jpg':
+          case 'jpeg':
+            mimeType = 'image/jpeg';
+            break;
+          case 'png':
+            mimeType = 'image/png';
+            break;
+          case 'webp':
+            mimeType = 'image/webp';
+            break;
+          case 'avif':
+            mimeType = 'image/avif';
+            break;
+          default:
+            mimeType = 'image/jpeg';
+        }
+        
+        // Convert to blob with appropriate quality
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob((result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(new Error('Failed to create blob from canvas'));
+            }
+          }, mimeType, quality / 100);
+        });
+        
+        console.log(`Fallback conversion successful: ${file.size} → ${blob.size} bytes`);
+        
+        return {
+          blob,
+          actualFormat: format,
+          fallbackUsed: true
+        };
+        
+      } catch (imageBitmapError) {
+        console.warn('createImageBitmap failed, trying alternative approach:', imageBitmapError);
+        
+        // Alternative fallback: try with a simple Image approach but with longer timeout
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+          
+          // Set a longer timeout for mobile
+          const timeout = setTimeout(() => {
+            reject(new Error('Image loading timeout in fallback method'));
+          }, 30000); // 30 seconds
+          
+          img.onload = () => {
+            clearTimeout(timeout);
+            try {
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.drawImage(img, 0, 0);
+              
+              // Handle format-specific MIME types
+              let mimeType: string;
+              switch (format) {
+                case 'jpg':
+                case 'jpeg':
+                  mimeType = 'image/jpeg';
+                  break;
+                case 'png':
+                  mimeType = 'image/png';
+                  break;
+                case 'webp':
+                  mimeType = 'image/webp';
+                  break;
+                case 'avif':
+                  mimeType = 'image/avif';
+                  break;
+                default:
+                  mimeType = 'image/jpeg';
+              }
+              
+              canvas.toBlob((blob) => {
+                if (blob) {
+                  console.log(`Alternative fallback conversion successful: ${file.size} → ${blob.size} bytes`);
+                  resolve({
+                    blob,
+                    actualFormat: format,
+                    fallbackUsed: true
+                  });
+                } else {
+                  reject(new Error('Failed to create blob in alternative fallback'));
+                }
+              }, mimeType, quality / 100);
+            } catch (error) {
+              reject(new Error(`Canvas processing failed in fallback: ${error instanceof Error ? error.message : 'Unknown error'}`));
+            }
+          };
+          
+          img.onerror = () => {
+            clearTimeout(timeout);
+            reject(new Error('Image failed to load in fallback method'));
+          };
+          
+          // Use object URL for the image
+          img.src = URL.createObjectURL(file);
+        });
+      }
       
-      // Create canvas
+    } catch (error) {
+      console.error('All fallback methods failed, trying final JPEG fallback:', error);
+      
+      // Final fallback: Force JPEG conversion with minimal processing
+      try {
+        return await this.convertToJPEGMinimal(file, quality);
+      } catch (finalError) {
+        console.error('Final JPEG fallback also failed:', finalError);
+        throw new Error(`All conversion methods failed. Original error: ${error instanceof Error ? error.message : 'Unknown error'}. Final error: ${finalError instanceof Error ? finalError.message : 'Unknown error'}`);
+      }
+    }
+  }
+
+  /**
+   * Minimal JPEG conversion as final fallback
+   * Uses the most basic approach possible
+   */
+  private static async convertToJPEGMinimal(file: File, quality: number): Promise<ConversionResult> {
+    console.log(`Using minimal JPEG conversion as final fallback for ${file.name}`);
+    
+    return new Promise((resolve, reject) => {
+      const img = new Image();
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
       if (!ctx) {
-        throw new Error('Failed to get canvas context');
+        reject(new Error('Failed to get canvas context in minimal conversion'));
+        return;
       }
       
-      // Set canvas dimensions
-      canvas.width = imageBitmap.width;
-      canvas.height = imageBitmap.height;
+      // Very long timeout for this final attempt
+      const timeout = setTimeout(() => {
+        reject(new Error('Minimal JPEG conversion timeout'));
+      }, 60000); // 60 seconds
       
-      // Draw image bitmap to canvas
-      ctx.drawImage(imageBitmap, 0, 0);
-      
-      // Clean up image bitmap immediately
-      imageBitmap.close();
-      
-      // Handle format-specific MIME types
-      let mimeType: string;
-      switch (format) {
-        case 'jpg':
-        case 'jpeg':
-          mimeType = 'image/jpeg';
-          break;
-        case 'png':
-          mimeType = 'image/png';
-          break;
-        case 'webp':
-          mimeType = 'image/webp';
-          break;
-        case 'avif':
-          mimeType = 'image/avif';
-          break;
-        default:
-          mimeType = 'image/jpeg';
-      }
-      
-      // Convert to blob with appropriate quality
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((result) => {
-          if (result) {
-            resolve(result);
-          } else {
-            reject(new Error('Failed to create blob from canvas'));
-          }
-        }, mimeType, quality / 100);
-      });
-      
-      console.log(`Fallback conversion successful: ${file.size} → ${blob.size} bytes`);
-      
-      return {
-        blob,
-        actualFormat: format,
-        fallbackUsed: true
+      img.onload = () => {
+        clearTimeout(timeout);
+        try {
+          // Set canvas to image size
+          canvas.width = img.width;
+          canvas.height = img.height;
+          
+          // Draw image with minimal processing
+          ctx.drawImage(img, 0, 0);
+          
+          // Convert to JPEG with basic quality
+          canvas.toBlob((blob) => {
+            if (blob) {
+              console.log(`Minimal JPEG conversion successful: ${file.size} → ${blob.size} bytes`);
+              resolve({
+                blob,
+                actualFormat: 'jpg',
+                fallbackUsed: true
+              });
+            } else {
+              reject(new Error('Failed to create JPEG blob in minimal conversion'));
+            }
+          }, 'image/jpeg', Math.max(0.1, quality / 100)); // Ensure minimum quality
+        } catch (error) {
+          reject(new Error(`Minimal conversion failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        }
       };
       
-    } catch (error) {
-      console.error('Fallback conversion failed:', error);
-      throw new Error(`Fallback conversion failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+      img.onerror = () => {
+        clearTimeout(timeout);
+        reject(new Error('Image failed to load in minimal conversion'));
+      };
+      
+      // Use object URL
+      img.src = URL.createObjectURL(file);
+    });
   }
 }
 
