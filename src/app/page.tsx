@@ -351,13 +351,14 @@ function HomeContent() {
       });
       
     } catch (err) {
-      setError('Conversion failed. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      console.error('Conversion error:', err);
+      setError(`Conversion failed: ${errorMessage}`);
       addToast({
         type: 'error',
         title: 'Conversion Failed',
-        description: 'An error occurred during conversion. Please try again.'
+        description: `Error: ${errorMessage}`
       });
-      console.error('Conversion error:', err);
     } finally {
       setIsConverting(false);
       setIsLoading(false);
@@ -412,7 +413,8 @@ function HomeContent() {
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             console.error(`Conversion failed for ${file.name}:`, errorMessage);
-            reject(new Error(`Failed to convert image: ${errorMessage}`));
+            console.error('Full error object:', error);
+            reject(new Error(`Failed to convert ${file.name}: ${errorMessage}`));
           }
         };
 
