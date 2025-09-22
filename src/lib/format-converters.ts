@@ -546,6 +546,20 @@ export class FormatConverter {
   private static async convertToJPEGMinimal(file: File, quality: number): Promise<ConversionResult> {
     console.log(`Using minimal JPEG conversion as final fallback for ${file.name}`);
     
+    // Check if we're in extreme low memory situation
+    const memoryPressure = typeof window !== 'undefined' ? memoryManager.getMemoryPressureLevel() : 'low';
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const shouldSkipImageLoading = typeof window !== 'undefined' ? memoryManager.shouldSkipImageLoading() : false;
+    
+    if (shouldSkipImageLoading || (memoryPressure === 'high' && isMobile)) {
+      console.log('Extreme low memory detected, trying direct file approach...');
+      try {
+        return await this.convertWithDirectFileApproach(file, quality);
+      } catch (directError) {
+        console.warn('Direct file approach failed, falling back to image loading:', directError);
+      }
+    }
+    
     return new Promise((resolve, reject) => {
       const img = new Image();
       const canvas = document.createElement('canvas');
@@ -597,6 +611,83 @@ export class FormatConverter {
       // Use object URL
       img.src = URL.createObjectURL(file);
     });
+  }
+
+  /**
+   * Direct file approach for extreme low memory situations
+   * Tries to convert with a very small version of the image
+   */
+  private static async convertWithDirectFileApproach(file: File, quality: number): Promise<ConversionResult> {
+    console.log(`Using direct file approach for extreme low memory: ${file.name}`);
+    
+    try {
+      // Try to create a very small version of the image
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        throw new Error('Failed to get canvas context in direct approach');
+      }
+      
+      // Create a very small canvas to minimize memory usage
+      const maxSize = 200; // Very small size for low memory
+      canvas.width = maxSize;
+      canvas.height = maxSize;
+      
+      // Try to load the image with a very short timeout
+      const img = new Image();
+      
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Image loading timeout in direct approach'));
+        }, 10000); // 10 seconds max
+        
+        img.onload = () => {
+          clearTimeout(timeout);
+          try {
+            // Calculate scaling to fit in small canvas
+            const scale = Math.min(maxSize / img.width, maxSize / img.height);
+            const scaledWidth = img.width * scale;
+            const scaledHeight = img.height * scale;
+            
+            // Center the image in the canvas
+            const x = (maxSize - scaledWidth) / 2;
+            const y = (maxSize - scaledHeight) / 2;
+            
+            // Draw the scaled image
+            ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+            
+            // Convert to JPEG
+            canvas.toBlob((blob) => {
+              if (blob) {
+                console.log(`Direct file approach successful: ${file.size} → ${blob.size} bytes (scaled to ${scaledWidth}x${scaledHeight})`);
+                resolve({
+                  blob,
+                  actualFormat: 'jpg',
+                  fallbackUsed: true
+                });
+              } else {
+                reject(new Error('Failed to create blob in direct approach'));
+              }
+            }, 'image/jpeg', Math.max(0.1, quality / 100));
+          } catch (error) {
+            reject(new Error(`Canvas processing failed in direct approach: ${error instanceof Error ? error.message : 'Unknown error'}`));
+          }
+        };
+        
+        img.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('Image failed to load in direct approach'));
+        };
+        
+        // Use object URL
+        img.src = URL.createObjectURL(file);
+      });
+      
+    } catch (error) {
+      console.error('Direct file approach failed:', error);
+      throw new Error(`Direct file approach failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 }
 

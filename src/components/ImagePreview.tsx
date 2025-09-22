@@ -104,6 +104,8 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
             setObjectURL(null);
             setError(true);
             setIsLoading(false);
+            // Signal that preview failed due to memory constraints
+            memoryManager.signalPreviewFailure();
           };
           
           img.src = url;
@@ -112,12 +114,16 @@ export default function ImagePreview({ file, onRemove, index }: ImagePreviewProp
           console.error('Preview loading error:', error);
           setError(true);
           setIsLoading(false);
+          // Signal that preview failed due to memory constraints
+          memoryManager.signalPreviewFailure();
         }
 
       } catch (error) {
         console.error('Error in loadPreview:', error);
         setError(true);
         setIsLoading(false);
+        // Signal that preview failed due to memory constraints
+        memoryManager.signalPreviewFailure();
       }
     };
 

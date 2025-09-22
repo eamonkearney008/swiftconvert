@@ -336,6 +336,32 @@ export class MemoryManager {
       tabCount: this.estimateTabCount()
     };
   }
+
+  /**
+   * Signal that image preview failed - indicates low memory
+   */
+  signalPreviewFailure() {
+    if (typeof window === 'undefined') return;
+    
+    console.log('Image preview failed - signaling high memory pressure');
+    this.memoryPressureLevel = 'high';
+    
+    // Trigger immediate cleanup
+    this.triggerAggressiveCleanup();
+  }
+
+  /**
+   * Check if we should skip image loading entirely
+   */
+  shouldSkipImageLoading(): boolean {
+    if (typeof window === 'undefined') return false;
+    
+    const isMobile = window.innerWidth <= 768;
+    const memoryPressure = this.memoryPressureLevel;
+    
+    // Skip image loading if we're on mobile with high memory pressure
+    return isMobile && memoryPressure === 'high';
+  }
 }
 
 // Export singleton instance
