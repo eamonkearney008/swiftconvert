@@ -369,14 +369,32 @@ export class FormatConverter {
       
       img.onerror = (error) => {
         clearTimeout(timeout);
+        console.error('=== IMAGE LOAD ERROR ===');
         console.error('Image load error:', error);
+        console.error('File details:', {
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+        console.error('Format:', format);
+        console.error('Quality:', quality);
+        console.error('Is mobile:', isMobile);
+        console.error('Memory pressure:', memoryPressure);
+        console.error('Should skip image loading:', typeof window !== 'undefined' ? memoryManager.shouldSkipImageLoading() : 'N/A');
+        console.error('========================');
         console.log('Attempting fallback conversion method...');
         
         // Try fallback conversion method for memory-constrained situations
         this.convertWithFallbackMethod(file, format, quality)
           .then(resolve)
           .catch((fallbackError) => {
+            console.error('=== FALLBACK CONVERSION FAILED ===');
             console.error('Fallback conversion also failed:', fallbackError);
+            console.error('Fallback error type:', typeof fallbackError);
+            console.error('Fallback error constructor:', fallbackError?.constructor?.name);
+            console.error('Full fallback error object:', fallbackError);
+            console.error('Fallback error stack:', fallbackError instanceof Error ? fallbackError.stack : 'No stack available');
+            console.error('==================================');
             const errorMsg = isMobile 
               ? 'Failed to load image on mobile - may be due to memory constraints or unsupported format'
               : 'Failed to load image';
@@ -461,6 +479,18 @@ export class FormatConverter {
         };
         
       } catch (imageBitmapError) {
+        console.error('=== CREATEIMAGEBITMAP FAILED ===');
+        console.error('createImageBitmap failed:', imageBitmapError);
+        console.error('Error type:', typeof imageBitmapError);
+        console.error('Error constructor:', imageBitmapError?.constructor?.name);
+        console.error('Full error object:', imageBitmapError);
+        console.error('Error stack:', imageBitmapError instanceof Error ? imageBitmapError.stack : 'No stack available');
+        console.error('File details:', {
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+        console.error('===============================');
         console.warn('createImageBitmap failed, trying alternative approach:', imageBitmapError);
         
         // Alternative fallback: try with a simple Image approach but with longer timeout
@@ -523,8 +553,20 @@ export class FormatConverter {
             }
           };
           
-          img.onerror = () => {
+          img.onerror = (error) => {
             clearTimeout(timeout);
+            console.error('=== ALTERNATIVE FALLBACK IMAGE LOAD FAILED ===');
+            console.error('Image failed to load in fallback method:', error);
+            console.error('File details:', {
+              name: file.name,
+              size: file.size,
+              type: file.type
+            });
+            console.error('Format:', format);
+            console.error('Quality:', quality);
+            console.error('Is mobile:', typeof window !== 'undefined' && window.innerWidth <= 768);
+            console.error('Memory pressure:', typeof window !== 'undefined' ? memoryManager.getMemoryPressureLevel() : 'N/A');
+            console.error('===============================================');
             reject(new Error('Image failed to load in fallback method'));
           };
           

@@ -352,7 +352,23 @@ function HomeContent() {
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      console.error('Conversion error:', err);
+      
+      // Enhanced error logging for mobile debugging
+      console.error('=== CONVERSION ERROR DETAILS ===');
+      console.error('Error message:', errorMessage);
+      console.error('Error type:', typeof err);
+      console.error('Error constructor:', err?.constructor?.name);
+      console.error('Full error object:', err);
+      console.error('Error stack:', err instanceof Error ? err.stack : 'No stack available');
+      console.error('Selected files count:', selectedFiles.length);
+      console.error('Current settings:', currentSettings);
+      console.error('Conversion method:', conversionMethod);
+      console.error('Memory pressure:', typeof window !== 'undefined' ? memoryManager.getMemoryPressureLevel() : 'N/A');
+      console.error('Is mobile:', typeof window !== 'undefined' && window.innerWidth <= 768);
+      console.error('Window dimensions:', typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : 'N/A');
+      console.error('Available memory:', typeof window !== 'undefined' && 'memory' in performance ? (performance as any).memory : 'N/A');
+      console.error('================================');
+      
       setError(`Conversion failed: ${errorMessage}`);
       addToast({
         type: 'error',
@@ -412,8 +428,27 @@ function HomeContent() {
             });
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            console.error(`Conversion failed for ${file.name}:`, errorMessage);
+            
+            // Enhanced error logging for individual file conversion
+            console.error(`=== FILE CONVERSION ERROR: ${file.name} ===`);
+            console.error('File details:', {
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              lastModified: file.lastModified
+            });
+            console.error('Settings:', settings);
+            console.error('Error message:', errorMessage);
+            console.error('Error type:', typeof error);
+            console.error('Error constructor:', error?.constructor?.name);
             console.error('Full error object:', error);
+            console.error('Error stack:', error instanceof Error ? error.stack : 'No stack available');
+            console.error('Memory pressure:', typeof window !== 'undefined' ? memoryManager.getMemoryPressureLevel() : 'N/A');
+            console.error('Should skip image loading:', typeof window !== 'undefined' ? memoryManager.shouldSkipImageLoading() : 'N/A');
+            console.error('Is mobile:', typeof window !== 'undefined' && window.innerWidth <= 768);
+            console.error('Available memory:', typeof window !== 'undefined' && 'memory' in performance ? (performance as any).memory : 'N/A');
+            console.error('==========================================');
+            
             reject(new Error(`Failed to convert ${file.name}: ${errorMessage}`));
           }
         };
