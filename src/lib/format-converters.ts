@@ -318,7 +318,7 @@ export class FormatConverter {
               .then(blob => {
                 if (blob) {
                   console.log(`Conversion successful: ${blob.size} bytes`);
-                  resolve({ blob, actualFormat: format });
+                  resolve({ blob, actualFormat: format, fallbackUsed: false });
                 } else {
                   console.error('Canvas.convertToBlob returned null');
                   reject(new Error(`Failed to convert to ${format} - no blob returned`));
@@ -339,7 +339,7 @@ export class FormatConverter {
               clearTimeout(timeout);
               if (blob) {
                 console.log(`Conversion successful: ${blob.size} bytes`);
-                resolve({ blob, actualFormat: format });
+                resolve({ blob, actualFormat: format, fallbackUsed: false });
               } else {
                 console.error('Canvas.toBlob returned null');
                 reject(new Error(`Failed to convert to ${format} - no blob returned`));
@@ -440,13 +440,8 @@ export class FormatConverter {
       
       return {
         blob,
-        originalFile: file,
-        originalSize: file.size,
-        convertedSize: blob.size,
-        format,
-        method: 'fallback-memory-efficient',
-        compressionRatio: (file.size - blob.size) / file.size,
-        processingTime: 0 // Will be set by caller
+        actualFormat: format,
+        fallbackUsed: true
       };
       
     } catch (error) {
