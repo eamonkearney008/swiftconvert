@@ -40,12 +40,12 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Cross-Origin-Embedder-Policy',
-            value: 'credentialless',
+            value: 'unsafe-none',
           },
         ],
       },
       {
-        source: '/(.*)',
+        source: '/((?!manifest\\.json).*)',
         headers: [
           {
             key: 'Cross-Origin-Opener-Policy',

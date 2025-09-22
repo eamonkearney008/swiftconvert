@@ -1,4 +1,5 @@
 // Format conversion utilities for advanced image formats
+import { memoryManager } from './memory-manager';
 
 export interface ConversionResult {
   blob: Blob;
