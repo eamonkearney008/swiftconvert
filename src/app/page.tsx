@@ -636,12 +636,6 @@ function HomeContent() {
               </motion.p>
             </motion.div>
 
-            {/* Ad Placement */}
-            <div className="flex justify-center mb-8">
-              <InContentAd />
-            </div>
-
-
             {/* File Upload */}
             <motion.div
               className="mb-8"
@@ -1194,6 +1188,18 @@ function HomeContent() {
                     ))}
                   </div>
                 </div>
+              </motion.div>
+            )}
+
+            {/* Ad Placement - After main functionality */}
+            {conversionResults.length > 0 && (
+              <motion.div
+                className="flex justify-center my-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <InContentAd />
               </motion.div>
             )}
           </>
