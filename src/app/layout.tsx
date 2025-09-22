@@ -38,9 +38,9 @@ export const metadata: Metadata = {
     siteName: 'SnapCovert',
     images: [
       {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
+        url: '/icon.svg',
+        width: 512,
+        height: 512,
         alt: 'SnapCovert - Fast, Private Image Converter',
       },
     ],
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "SnapCovert - Fast, Private Image Converter",
     description: "Convert images fast and privately in your browser. Support for JPG, PNG, WebP, AVIF, HEIC and more.",
-    images: ['/og-image.png'],
+    images: ['/icon.svg'],
   },
   robots: {
     index: true,
@@ -66,9 +66,9 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.json',
   icons: {
-    icon: '/icon-192x192.png',
-    shortcut: '/icon-192x192.png',
-    apple: '/icon-192x192.png',
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
   },
   appleWebApp: {
     capable: true,
