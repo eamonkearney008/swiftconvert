@@ -22,7 +22,7 @@ export default function HeaderNavigation() {
       </div>
       
       {/* Mobile Navigation Button */}
-      <div className="md:hidden mr-24 px-4">
+      <div className="md:hidden mr-4 px-2">
         <a
           href="/blog"
           className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium text-sm"
@@ -32,8 +32,8 @@ export default function HeaderNavigation() {
       </div>
       
       {/* Status */}
-      <div className="flex items-center space-x-4 ml-8">
-        <span className="text-sm text-slate-600 dark:text-slate-400">
+      <div className="flex items-center space-x-2 md:space-x-4 ml-2 md:ml-8">
+        <span className="text-sm text-slate-600 dark:text-slate-400 hidden sm:inline">
           Processing locally
         </span>
         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
