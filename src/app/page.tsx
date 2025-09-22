@@ -1332,7 +1332,7 @@ function HomeContent() {
                             <div className="flex justify-between items-center text-sm mb-1">
                               <span className="text-slate-900 dark:text-white truncate flex-1 min-w-0 mr-2">{file.name}</span>
                             </div>
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                               <div className="flex items-center space-x-1 text-slate-500 dark:text-slate-400">
                                 <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded text-xs">
                                   {file.format.toUpperCase()}
@@ -1341,7 +1341,7 @@ function HomeContent() {
                                   {file.method}
                                 </span>
                               </div>
-                              <span className="text-xs text-green-600 dark:text-green-400 ml-2">
+                              <span className="text-xs text-green-600 dark:text-green-400 flex-shrink-0">
                                 {((file.originalSize - file.convertedSize) / file.originalSize * 100).toFixed(1)}%
                               </span>
                             </div>
