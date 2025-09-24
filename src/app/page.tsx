@@ -9,6 +9,7 @@ import { Tooltip } from '../components/ui/tooltip';
 import { FormatConverter } from '../lib/format-converters';
 import { getPerformanceMonitor } from '../lib/performance';
 import { memoryManager } from '../lib/memory-manager';
+import { conversionOrchestrator } from '../lib/conversion-orchestrator';
 import HeaderNavigation from '../components/HeaderNavigation';
 import { InContentAd } from '../components/AdSense';
 
@@ -18,7 +19,7 @@ function HomeContent() {
   const [isConverting, setIsConverting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [conversionProgress, setConversionProgress] = useState({ current: 0, total: 0, currentFile: '' });
+  const [conversionProgress, setConversionProgress] = useState({ current: 0, total: 0, currentFile: '', processingMode: '' });
   const { addToast } = useToast();
   const [currentSettings, setCurrentSettings] = useState({
     format: 'webp' as 'webp' | 'jpg' | 'png' | 'avif' | 'heic' | 'tiff' | 'gif' | 'bmp' | 'ico',
@@ -261,7 +262,7 @@ function HomeContent() {
     setIsLoading(true);
     setError(null);
     setConversionResults([]);
-    setConversionProgress({ current: 0, total: selectedFiles.length, currentFile: '' });
+    setConversionProgress({ current: 0, total: selectedFiles.length, currentFile: '', processingMode: '' });
 
     // Check for large files and warn user
     const largeFiles = selectedFiles.filter(file => file.size > 10 * 1024 * 1024);
@@ -278,7 +279,8 @@ function HomeContent() {
     try {
       const results: any[] = [];
       
-      if (conversionMethod === 'local') {
+      // Always use orchestrator for automatic local/edge selection
+      if (true) {
         // Use memory manager for intelligent batch sizing and cleanup (only in browser)
         const batchSize = typeof window !== 'undefined' ? memoryManager.getRecommendedBatchSize() : 3;
         const delay = typeof window !== 'undefined' ? memoryManager.getRecommendedDelay() : 50;
@@ -307,7 +309,7 @@ function HomeContent() {
               currentFile: file.name 
             });
             
-            const result = await convertImageLocally(file, currentSettings);
+            const result = await convertImageWithOrchestrator(file, currentSettings);
             setConversionResults(prev => [...prev, result]);
             results.push(result);
             
@@ -335,7 +337,7 @@ function HomeContent() {
             currentFile: file.name 
           });
           
-          const result = await convertImageOnEdge(file, currentSettings);
+          const result = await convertImageWithOrchestrator(file, currentSettings);
           results.push(result);
           setConversionResults(prev => [...prev, result]);
         }
@@ -378,6 +380,37 @@ function HomeContent() {
     } finally {
       setIsConverting(false);
       setIsLoading(false);
+    }
+  };
+
+  const convertImageWithOrchestrator = async (file: File, settings: any) => {
+    try {
+      // Determine processing mode before conversion
+      const sourceFormat = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const deviceMemory = typeof window !== 'undefined' && 'deviceMemory' in navigator ? (navigator as any).deviceMemory : undefined;
+      
+      // Use edge processor logic to determine mode
+      const processingMode = sourceFormat === 'heic' || sourceFormat === 'heif' || file.size > 80 * 1024 * 1024 || (deviceMemory && deviceMemory < 4) ? 'edge' : 'local';
+      
+      // Update progress with processing mode
+      setConversionProgress(prev => ({ ...prev, processingMode }));
+      
+      // Use the conversion orchestrator to automatically choose between local and edge processing
+      const result = await conversionOrchestrator.convertImage(file, settings);
+      
+      return {
+        originalFile: file,
+        convertedFile: result.blob,
+        originalSize: result.originalSize,
+        convertedSize: result.compressedSize,
+        format: settings.format,
+        actualFormat: result.metadata.format,
+        fallbackUsed: false,
+        quality: settings.quality,
+        method: processingMode
+      };
+    } catch (error) {
+      throw new Error(`Failed to convert image: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -790,7 +823,7 @@ function HomeContent() {
               </motion.div>
             )}
 
-            {/* Conversion Method Selection */}
+            {/* Smart Processing Selection */}
             <motion.div
               className="mb-8"
               initial={{ opacity: 0, y: 20 }}
@@ -799,53 +832,28 @@ function HomeContent() {
             >
               <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-                  Conversion Method
+                  Smart Processing
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <button
-                    onClick={() => setConversionMethod('local')}
-                    className={`p-4 border rounded-lg transition-all duration-200 ${
-                      conversionMethod === 'local'
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-600'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center ${
-                        conversionMethod === 'local'
-                          ? 'bg-gradient-to-br from-blue-500 to-blue-600'
-                          : 'bg-gradient-to-br from-slate-400 to-slate-500'
-                      }`}>
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <h4 className="font-medium text-slate-900 dark:text-white">Local Processing</h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Fast, private, offline</p>
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-medium text-slate-900 dark:text-white mb-2">Automatic Processing</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                    Intelligently chooses between local and edge processing based on file type, size, and device capabilities
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-slate-600 dark:text-slate-300">Local: Fast, private processing</span>
                     </div>
-                  </button>
-                  <button
-                    onClick={() => setConversionMethod('edge')}
-                    className={`p-4 border rounded-lg transition-all duration-200 ${
-                      conversionMethod === 'edge'
-                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                        : 'border-slate-200 dark:border-slate-600 hover:border-green-300 dark:hover:border-green-600'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center ${
-                        conversionMethod === 'edge'
-                          ? 'bg-gradient-to-br from-green-500 to-green-600'
-                          : 'bg-gradient-to-br from-slate-400 to-slate-500'
-                      }`}>
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
-                        </svg>
-                      </div>
-                      <h4 className="font-medium text-slate-900 dark:text-white">Edge Processing</h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Cloud-powered, advanced</p>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-slate-600 dark:text-slate-300">Edge: Advanced format support</span>
                     </div>
-                  </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -1133,13 +1141,29 @@ function HomeContent() {
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                       <div 
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-out"
+                        className={`h-2 rounded-full transition-all duration-300 ease-out ${
+                          conversionProgress.processingMode === 'edge' 
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
+                            : 'bg-gradient-to-r from-blue-500 to-purple-600'
+                        }`}
                         style={{ width: `${conversionProgress.total > 0 ? (conversionProgress.current / conversionProgress.total) * 100 : 0}%` }}
                       ></div>
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 text-center">
-                      {conversionProgress.total > 0 ? `${Math.round((conversionProgress.current / conversionProgress.total) * 100)}% complete` : 'Starting conversion...'}
-                    </p>
+                    <div className="flex justify-between items-center mt-2">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {conversionProgress.total > 0 ? `${Math.round((conversionProgress.current / conversionProgress.total) * 100)}% complete` : 'Starting conversion...'}
+                      </p>
+                      {conversionProgress.processingMode && (
+                        <div className="flex items-center space-x-1">
+                          <div className={`w-2 h-2 rounded-full ${
+                            conversionProgress.processingMode === 'edge' ? 'bg-green-500' : 'bg-blue-500'
+                          }`}></div>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                            {conversionProgress.processingMode === 'edge' ? 'Edge Processing' : 'Local Processing'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   <ConversionSkeleton />

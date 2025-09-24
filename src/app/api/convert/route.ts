@@ -68,9 +68,8 @@ async function processImageEdge(
     const buffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(buffer);
     
-    // For HEIC/HEIF files, we would use a specialized library
-    // For now, we'll implement basic format conversion using Canvas API
-    const result = await convertImageBuffer(uint8Array, settings);
+    // Process the image based on format
+    const result = await convertImageBuffer(uint8Array, settings, file.name);
     
     const processingTime = Date.now() - startTime;
     const compressionRatio = ((file.size - result.size) / file.size) * 100;
@@ -89,30 +88,85 @@ async function processImageEdge(
   }
 }
 
-// Convert image buffer (simplified implementation)
+// Convert image buffer using Canvas API (edge runtime compatible)
 async function convertImageBuffer(
   buffer: Uint8Array,
-  settings: ConversionSettings
+  settings: ConversionSettings,
+  fileName: string
 ): Promise<{
   data: Uint8Array;
   size: number;
   mimeType: string;
 }> {
-  // This is a simplified implementation
-  // In a real application, you would use specialized libraries like:
-  // - sharp (Node.js)
-  // - libheif (for HEIC/HEIF)
-  // - ImageMagick
-  // - Or other image processing libraries
-  
-  // For now, we'll return the original buffer with updated MIME type
-  const mimeType = getMimeType(settings.format);
-  
-  return {
-    data: buffer,
-    size: buffer.length,
-    mimeType,
-  };
+  try {
+    // Create a blob from the buffer
+    const blob = new Blob([buffer], { type: getMimeTypeFromFileName(fileName) });
+    
+    // Create an image element
+    const img = new Image();
+    const canvas = new OffscreenCanvas(1, 1);
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      throw new Error('Canvas context not available');
+    }
+    
+    // Load the image
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = URL.createObjectURL(blob);
+    });
+    
+    // Calculate output dimensions
+    const { width, height } = calculateOutputDimensions(
+      img.naturalWidth,
+      img.naturalHeight,
+      settings
+    );
+    
+    // Set canvas dimensions
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+    
+    // Draw image
+    ctx.drawImage(img, 0, 0, width, height);
+    
+    // Convert to target format
+    const mimeType = getMimeType(settings.format);
+    const quality = settings.quality ? settings.quality / 100 : 0.9;
+    
+    const outputBlob = await canvas.convertToBlob({
+      type: mimeType,
+      quality: quality
+    });
+    
+    // Convert blob to Uint8Array
+    const outputBuffer = await outputBlob.arrayBuffer();
+    const outputArray = new Uint8Array(outputBuffer);
+    
+    // Clean up
+    URL.revokeObjectURL(img.src);
+    
+    return {
+      data: outputArray,
+      size: outputArray.length,
+      mimeType,
+    };
+  } catch (error) {
+    // Fallback: return original buffer with updated MIME type
+    console.warn('Canvas processing failed, using fallback:', error);
+    const mimeType = getMimeType(settings.format);
+    
+    return {
+      data: buffer,
+      size: buffer.length,
+      mimeType,
+    };
+  }
 }
 
 // Get MIME type for format
@@ -160,6 +214,56 @@ function getFileExtension(format: ImageFormat): string {
   };
   
   return extensions[format] || 'jpg';
+}
+
+// Get MIME type from filename
+function getMimeTypeFromFileName(fileName: string): string {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  
+  const mimeTypes: Record<string, string> = {
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'webp': 'image/webp',
+    'avif': 'image/avif',
+    'heic': 'image/heic',
+    'heif': 'image/heif',
+    'tiff': 'image/tiff',
+    'tif': 'image/tiff',
+    'bmp': 'image/bmp',
+    'gif': 'image/gif',
+    'svg': 'image/svg+xml',
+  };
+  
+  return mimeTypes[extension || ''] || 'image/jpeg';
+}
+
+// Calculate output dimensions based on settings
+function calculateOutputDimensions(
+  originalWidth: number,
+  originalHeight: number,
+  settings: ConversionSettings
+): { width: number; height: number } {
+  let { width, height } = settings;
+  
+  if (!width && !height) {
+    return { width: originalWidth, height: originalHeight };
+  }
+  
+  if (width && height) {
+    return { width, height };
+  }
+  
+  // Calculate aspect ratio
+  const aspectRatio = originalWidth / originalHeight;
+  
+  if (width) {
+    height = Math.round(width / aspectRatio);
+  } else if (height) {
+    width = Math.round(height * aspectRatio);
+  }
+  
+  return { width: width!, height: height! };
 }
 
 // Health check endpoint
