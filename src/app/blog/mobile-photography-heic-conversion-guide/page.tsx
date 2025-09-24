@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { BlogHeader } from '../../../components/BlogHeader';
+import { InContentAd } from '../../../components/AdSense';
 import '../blog.css';
 
 export const metadata: Metadata = {
@@ -62,122 +63,107 @@ export default function MobilePhotographyGuide() {
         </header>
 
         {/* Article Content */}
-        <div className="prose prose-lg prose-slate dark:prose-invert max-w-none">
-          <div className="article-content text-slate-700 dark:text-slate-300 leading-relaxed">
-            <pre className="whitespace-pre-wrap font-sans">{`# Mobile Photography: Converting HEIC to Universal Formats
+        <article className="prose prose-lg max-w-none dark:prose-invert">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8 mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Introduction</h2>
+            <p className="text-slate-700 dark:text-slate-300 mb-6">
+              With the rise of iPhone photography, HEIC (High Efficiency Image Container) has become the default format for iOS devices. 
+              While HEIC offers superior compression and quality, it's not universally supported across all platforms and devices. 
+              This guide will help you understand when and how to convert HEIC files for maximum compatibility.
+            </p>
 
-## Introduction
-With the rise of iPhone photography, HEIC (High Efficiency Image Container) has become the default format for iOS devices. While HEIC offers superior compression and quality, it's not universally supported across all platforms and devices. This guide will help you understand when and how to convert HEIC files for maximum compatibility.
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">What is HEIC?</h2>
+            <p className="text-slate-700 dark:text-slate-300 mb-4">
+              HEIC is Apple's modern image format that uses HEIF (High Efficiency Image File Format) for storage. 
+              It offers several advantages over traditional JPEG:
+            </p>
+            
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg mb-6">
+              <ul className="space-y-2 text-blue-800 dark:text-blue-200">
+                <li>• <strong>50% smaller file sizes</strong> compared to JPEG at similar quality</li>
+                <li>• <strong>Better image quality</strong> with advanced compression algorithms</li>
+                <li>• <strong>Support for transparency</strong> and image sequences</li>
+                <li>• <strong>Wide color gamut</strong> and HDR support</li>
+              </ul>
+            </div>
 
-## What is HEIC?
-HEIC is Apple's modern image format that uses HEIF (High Efficiency Image File Format) for storage. It offers several advantages over traditional JPEG:
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">When to Convert HEIC Files</h2>
+            
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-green-900 dark:text-green-100 mb-4">Convert When:</h3>
+                <ul className="space-y-2 text-green-800 dark:text-green-200">
+                  <li>• <strong>Sharing with non-Apple users</strong> (Android, Windows, web browsers)</li>
+                  <li>• <strong>Uploading to social media</strong> (many platforms don't support HEIC)</li>
+                  <li>• <strong>Email attachments</strong> (better compatibility with email clients)</li>
+                  <li>• <strong>Web publishing</strong> (limited browser support)</li>
+                  <li>• <strong>Professional printing</strong> (many print services prefer JPEG/PNG)</li>
+                </ul>
+              </div>
+              
+              <div className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-orange-900 dark:text-orange-100 mb-4">Keep HEIC When:</h3>
+                <ul className="space-y-2 text-orange-800 dark:text-orange-200">
+                  <li>• <strong>Storing on Apple devices</strong> (iPhone, iPad, Mac)</li>
+                  <li>• <strong>Using Apple's ecosystem</strong> (Photos app, iCloud)</li>
+                  <li>• <strong>Maximum quality preservation</strong> is priority</li>
+                  <li>• <strong>Storage space</strong> is limited</li>
+                </ul>
+              </div>
+            </div>
 
-- **50% smaller file sizes** compared to JPEG at similar quality
-- **Better image quality** with advanced compression algorithms
-- **Support for transparency** and image sequences
-- **Wide color gamut** and HDR support
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Best Conversion Practices</h2>
+            
+            <div className="space-y-6">
+              <div className="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100 mb-4">1. Quality Settings</h3>
+                <p className="text-purple-800 dark:text-purple-200 mb-4">For HEIC to JPEG conversion:</p>
+                <ul className="space-y-2 text-purple-700 dark:text-purple-300">
+                  <li>• <strong>High quality (90-95%)</strong>: Professional work, printing</li>
+                  <li>• <strong>Medium quality (80-85%)</strong>: Social media, general sharing</li>
+                  <li>• <strong>Lower quality (70-75%)</strong>: Web use, email attachments</li>
+                </ul>
+              </div>
 
-## When to Convert HEIC Files
+              <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-4">2. Format Selection</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold text-indigo-800 dark:text-indigo-200 mb-2">Universal Compatibility:</h4>
+                    <ul className="text-sm text-indigo-700 dark:text-indigo-300">
+                      <li>• JPEG - Universal compatibility, good for photos</li>
+                      <li>• PNG - Lossless quality, good for graphics with transparency</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-indigo-800 dark:text-indigo-200 mb-2">Modern Formats:</h4>
+                    <ul className="text-sm text-indigo-700 dark:text-indigo-300">
+                      <li>• WebP - Modern web format, excellent compression</li>
+                      <li>• AVIF - Next-gen format, superior compression</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-### Convert When:
-- **Sharing with non-Apple users** (Android, Windows, web browsers)
-- **Uploading to social media** (many platforms don't support HEIC)
-- **Email attachments** (better compatibility with email clients)
-- **Web publishing** (limited browser support)
-- **Professional printing** (many print services prefer JPEG/PNG)
-
-### Keep HEIC When:
-- **Storing on Apple devices** (iPhone, iPad, Mac)
-- **Using Apple's ecosystem** (Photos app, iCloud)
-- **Maximum quality preservation** is priority
-- **Storage space** is limited
-
-## Best Conversion Practices
-
-### 1. Quality Settings
-For HEIC to JPEG conversion:
-- **High quality (90-95%)**: Professional work, printing
-- **Medium quality (80-85%)**: Social media, general sharing
-- **Lower quality (70-75%)**: Web use, email attachments
-
-### 2. Format Selection
-- **JPEG**: Universal compatibility, good for photos
-- **PNG**: Lossless quality, good for graphics with transparency
-- **WebP**: Modern web format, excellent compression
-- **AVIF**: Next-gen format, superior compression
-
-### 3. Batch Processing
-When converting large photo libraries:
-- Process in batches of 50-100 images
-- Monitor system memory usage
-- Use consistent quality settings
-- Keep original HEIC files as backup
-
-## Platform-Specific Considerations
-
-### Social Media
-- **Instagram**: JPEG, 1080x1080px (square) or 1080x1350px (portrait)
-- **Facebook**: JPEG, 1200x630px (recommended)
-- **Twitter**: JPEG, 1200x675px (16:9 ratio)
-- **LinkedIn**: JPEG, 1200x627px
-
-### Email and Messaging
-- **Email**: JPEG, under 5MB per attachment
-- **WhatsApp**: JPEG, under 16MB
-- **Telegram**: JPEG, under 20MB
-
-### Web and Blogging
-- **Blog posts**: WebP or JPEG, optimized for web
-- **E-commerce**: JPEG, high quality for product photos
-- **Portfolio**: PNG for graphics, JPEG for photos
-
-## Technical Tips
-
-### Preserving Quality
-1. **Avoid multiple conversions**: Convert directly from HEIC to target format
-2. **Use lossless formats**: PNG for graphics, TIFF for archival
-3. **Maintain aspect ratio**: Don't stretch or distort images
-4. **Preserve metadata**: Keep EXIF data when needed
-
-### File Size Management
-1. **Compress appropriately**: Balance quality vs file size
-2. **Use progressive JPEG**: Better loading experience
-3. **Consider WebP**: 25-35% smaller than JPEG
-4. **Strip unnecessary metadata**: Reduce file size
-
-## Common Issues and Solutions
-
-### Issue: "File not supported" error
-**Solution**: Convert to JPEG or PNG format
-
-### Issue: Poor quality after conversion
-**Solution**: Increase quality setting to 90% or higher
-
-### Issue: Large file sizes
-**Solution**: Use WebP format or reduce quality to 80%
-
-### Issue: Color differences
-**Solution**: Preserve color profile during conversion
-
-## SnapConvert Recommendations
-
-### For iPhone Users:
-1. **Use "Web Optimized" preset** for social media sharing
-2. **Use "Visually Lossless" preset** for professional work
-3. **Batch convert** entire photo libraries for compatibility
-4. **Keep originals** as HEIC for Apple ecosystem
-
-### For Photographers:
-1. **Convert to JPEG** for client delivery
-2. **Use TIFF** for print work
-3. **Create multiple formats** for different use cases
-4. **Maintain color profiles** for accurate reproduction
-
-## Conclusion
-HEIC is an excellent format for Apple users, but conversion is often necessary for universal compatibility. By understanding when to convert and using the right settings, you can maintain image quality while ensuring your photos work everywhere.
-
-SnapConvert makes this process simple with intelligent presets and batch processing capabilities, helping you convert your mobile photos efficiently while preserving the quality that makes them special.`}</pre>
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-6 rounded-lg mt-8">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Conclusion</h3>
+              <p className="text-slate-700 dark:text-slate-300">
+                HEIC is an excellent format for Apple users, but conversion is often necessary for universal compatibility. 
+                By understanding when to convert and using the right settings, you can maintain image quality while ensuring 
+                your photos work everywhere.
+              </p>
+              <p className="text-slate-600 dark:text-slate-400 mt-4">
+                SnapConvert makes this process simple with intelligent presets and batch processing capabilities, 
+                helping you convert your mobile photos efficiently while preserving the quality that makes them special.
+              </p>
+            </div>
           </div>
+        </article>
+
+        {/* AdSense Ad */}
+        <div className="flex justify-center my-8">
+          <InContentAd />
         </div>
 
         {/* Call to Action */}

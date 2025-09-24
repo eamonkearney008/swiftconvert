@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { BlogHeader } from '../../../components/BlogHeader';
+import { InContentAd } from '../../../components/AdSense';
 import '../blog.css';
 
 export const metadata: Metadata = {
@@ -257,6 +258,11 @@ export default function NextGenFormatsGuide() {
             </div>
           </div>
         </article>
+
+        {/* AdSense Ad */}
+        <div className="flex justify-center my-8">
+          <InContentAd />
+        </div>
 
         {/* Call to Action */}
         <div className="text-center bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-8">
