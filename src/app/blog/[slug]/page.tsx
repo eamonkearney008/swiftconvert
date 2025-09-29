@@ -266,12 +266,47 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${article.title} - SnapConvert`,
     description: article.excerpt,
     keywords: article.tags,
+    authors: [{ name: "SnapConvert Team" }],
+    creator: "SnapConvert",
+    publisher: "SnapConvert",
+    metadataBase: new URL('https://snapcovert.com'),
+    alternates: {
+      canonical: `/blog/${slug}`,
+    },
     openGraph: {
       title: article.title,
       description: article.excerpt,
+      url: `https://snapcovert.com/blog/${slug}`,
+      siteName: 'SnapConvert',
       type: 'article',
       publishedTime: article.date,
       tags: article.tags,
+      images: [
+        {
+          url: '/icon.svg',
+          width: 512,
+          height: 512,
+          alt: article.title,
+        },
+      ],
+      locale: 'en_US',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.excerpt,
+      images: ['/icon.svg'],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
   };
 }

@@ -8,6 +8,48 @@ export const metadata: Metadata = {
   title: 'Web Performance: Image Optimization for Faster Loading - SnapConvert',
   description: 'Technical guide to improving Core Web Vitals and page speed through strategic image format selection and optimization.',
   keywords: ['web performance', 'Core Web Vitals', 'page speed', 'SEO', 'image optimization', 'loading speed'],
+  authors: [{ name: 'SnapConvert Team' }],
+  creator: 'SnapConvert',
+  publisher: 'SnapConvert',
+  metadataBase: new URL('https://snapcovert.com'),
+  alternates: {
+    canonical: '/blog/web-performance-image-optimization',
+  },
+  openGraph: {
+    title: 'Web Performance: Image Optimization for Faster Loading',
+    description: 'Technical guide to improving Core Web Vitals and page speed through strategic image format selection and optimization.',
+    url: 'https://snapcovert.com/blog/web-performance-image-optimization',
+    siteName: 'SnapConvert',
+    type: 'article',
+    publishedTime: '2024-01-08',
+    tags: ['Web Performance', 'Core Web Vitals', 'Page Speed', 'SEO'],
+    images: [
+      {
+        url: '/icon.svg',
+        width: 512,
+        height: 512,
+        alt: 'Web Performance Optimization Guide',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Web Performance: Image Optimization for Faster Loading',
+    description: 'Technical guide to improving Core Web Vitals and page speed through strategic image format selection and optimization.',
+    images: ['/icon.svg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function WebPerformanceGuide() {

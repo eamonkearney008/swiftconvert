@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://snapcovert.com/sitemap-index.xml
+Sitemap: https://snapcovert.com/sitemap.xml
 
 # Disallow admin areas (if any)
 Disallow: /api/

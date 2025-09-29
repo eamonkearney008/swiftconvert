@@ -8,6 +8,48 @@ export const metadata: Metadata = {
   title: 'PNG vs TIFF: Choosing the Right Format for Professional Work - SnapConvert',
   description: 'Professional photographer and designer guide to selecting between PNG and TIFF for print, digital, and archival purposes.',
   keywords: ['PNG', 'TIFF', 'professional', 'print', 'archival', 'design', 'photography'],
+  authors: [{ name: 'SnapConvert Team' }],
+  creator: 'SnapConvert',
+  publisher: 'SnapConvert',
+  metadataBase: new URL('https://snapcovert.com'),
+  alternates: {
+    canonical: '/blog/png-vs-tiff-professional-work',
+  },
+  openGraph: {
+    title: 'PNG vs TIFF: Choosing the Right Format for Professional Work',
+    description: 'Professional photographer and designer guide to selecting between PNG and TIFF for print, digital, and archival purposes.',
+    url: 'https://snapcovert.com/blog/png-vs-tiff-professional-work',
+    siteName: 'SnapConvert',
+    type: 'article',
+    publishedTime: '2024-01-12',
+    tags: ['PNG', 'TIFF', 'Professional', 'Print', 'Archival'],
+    images: [
+      {
+        url: '/icon.svg',
+        width: 512,
+        height: 512,
+        alt: 'PNG vs TIFF Professional Guide',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PNG vs TIFF: Choosing the Right Format for Professional Work',
+    description: 'Professional photographer and designer guide to selecting between PNG and TIFF for print, digital, and archival purposes.',
+    images: ['/icon.svg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function PNGvsTIFFGuide() {

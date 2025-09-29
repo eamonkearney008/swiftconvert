@@ -8,6 +8,48 @@ export const metadata: Metadata = {
   title: 'Optimizing Images for Social Media: Instagram, Facebook, Twitter - SnapConvert',
   description: 'Complete guide to image dimensions, formats, and quality settings for optimal social media performance across all platforms.',
   keywords: ['social media', 'Instagram', 'Facebook', 'Twitter', 'image optimization', 'dimensions', 'formats'],
+  authors: [{ name: 'SnapConvert Team' }],
+  creator: 'SnapConvert',
+  publisher: 'SnapConvert',
+  metadataBase: new URL('https://snapcovert.com'),
+  alternates: {
+    canonical: '/blog/social-media-image-optimization',
+  },
+  openGraph: {
+    title: 'Optimizing Images for Social Media: Instagram, Facebook, Twitter',
+    description: 'Complete guide to image dimensions, formats, and quality settings for optimal social media performance across all platforms.',
+    url: 'https://snapcovert.com/blog/social-media-image-optimization',
+    siteName: 'SnapConvert',
+    type: 'article',
+    publishedTime: '2024-01-18',
+    tags: ['Instagram', 'Facebook', 'Twitter', 'Social Media', 'Dimensions'],
+    images: [
+      {
+        url: '/icon.svg',
+        width: 512,
+        height: 512,
+        alt: 'Social Media Optimization Guide',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Optimizing Images for Social Media: Instagram, Facebook, Twitter',
+    description: 'Complete guide to image dimensions, formats, and quality settings for optimal social media performance across all platforms.',
+    images: ['/icon.svg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function SocialMediaOptimizationGuide() {

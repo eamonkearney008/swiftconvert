@@ -8,6 +8,48 @@ export const metadata: Metadata = {
   title: 'Advanced Image Optimization Techniques - SnapConvert',
   description: 'Master advanced image optimization techniques including compression algorithms, format selection, and quality balancing for maximum efficiency.',
   keywords: ['image optimization', 'compression', 'algorithms', 'quality', 'efficiency', 'advanced techniques'],
+  authors: [{ name: 'SnapConvert Team' }],
+  creator: 'SnapConvert',
+  publisher: 'SnapConvert',
+  metadataBase: new URL('https://snapcovert.com'),
+  alternates: {
+    canonical: '/blog/advanced-image-optimization-techniques',
+  },
+  openGraph: {
+    title: 'Advanced Image Optimization Techniques',
+    description: 'Master advanced image optimization techniques including compression algorithms, format selection, and quality balancing for maximum efficiency.',
+    url: 'https://snapcovert.com/blog/advanced-image-optimization-techniques',
+    siteName: 'SnapConvert',
+    type: 'article',
+    publishedTime: '2024-01-09',
+    tags: ['Advanced', 'Compression', 'Algorithms', 'Quality', 'Efficiency'],
+    images: [
+      {
+        url: '/icon.svg',
+        width: 512,
+        height: 512,
+        alt: 'Advanced Image Optimization Guide',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Advanced Image Optimization Techniques',
+    description: 'Master advanced image optimization techniques including compression algorithms, format selection, and quality balancing for maximum efficiency.',
+    images: ['/icon.svg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function AdvancedOptimizationGuide() {

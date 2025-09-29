@@ -8,6 +8,48 @@ export const metadata: Metadata = {
   title: 'Batch Processing: Converting Large Photo Libraries Efficiently - SnapConvert',
   description: 'Best practices for processing hundreds or thousands of images efficiently while maintaining quality and managing system resources.',
   keywords: ['batch processing', 'large files', 'efficiency', 'memory management', 'photo libraries', 'automation'],
+  authors: [{ name: 'SnapConvert Team' }],
+  creator: 'SnapConvert',
+  publisher: 'SnapConvert',
+  metadataBase: new URL('https://snapcovert.com'),
+  alternates: {
+    canonical: '/blog/batch-processing-large-photo-libraries',
+  },
+  openGraph: {
+    title: 'Batch Processing: Converting Large Photo Libraries Efficiently',
+    description: 'Best practices for processing hundreds or thousands of images efficiently while maintaining quality and managing system resources.',
+    url: 'https://snapcovert.com/blog/batch-processing-large-photo-libraries',
+    siteName: 'SnapConvert',
+    type: 'article',
+    publishedTime: '2024-01-03',
+    tags: ['batch processing', 'large files', 'efficiency', 'memory management'],
+    images: [
+      {
+        url: '/icon.svg',
+        width: 512,
+        height: 512,
+        alt: 'Batch Processing Guide',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Batch Processing: Converting Large Photo Libraries Efficiently',
+    description: 'Best practices for processing hundreds or thousands of images efficiently while maintaining quality and managing system resources.',
+    images: ['/icon.svg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function BatchProcessingGuide() {

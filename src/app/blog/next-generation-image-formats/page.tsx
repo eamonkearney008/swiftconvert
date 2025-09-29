@@ -8,6 +8,48 @@ export const metadata: Metadata = {
   title: 'Next-Generation Image Formats: The Future of Digital Images - SnapConvert',
   description: 'Explore emerging image formats like AVIF, HEIF, and WebP 2.0 that are revolutionizing digital image compression and quality.',
   keywords: ['AVIF', 'HEIF', 'WebP 2.0', 'future formats', 'next generation', 'image compression', 'emerging technology'],
+  authors: [{ name: 'SnapConvert Team' }],
+  creator: 'SnapConvert',
+  publisher: 'SnapConvert',
+  metadataBase: new URL('https://snapcovert.com'),
+  alternates: {
+    canonical: '/blog/next-generation-image-formats',
+  },
+  openGraph: {
+    title: 'Next-Generation Image Formats: The Future of Digital Images',
+    description: 'Explore emerging image formats like AVIF, HEIF, and WebP 2.0 that are revolutionizing digital image compression and quality.',
+    url: 'https://snapcovert.com/blog/next-generation-image-formats',
+    siteName: 'SnapConvert',
+    type: 'article',
+    publishedTime: '2024-01-07',
+    tags: ['AVIF', 'HEIF', 'WebP 2.0', 'Future', 'Innovation', 'Compression'],
+    images: [
+      {
+        url: '/icon.svg',
+        width: 512,
+        height: 512,
+        alt: 'Next-Generation Image Formats Guide',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Next-Generation Image Formats: The Future of Digital Images',
+    description: 'Explore emerging image formats like AVIF, HEIF, and WebP 2.0 that are revolutionizing digital image compression and quality.',
+    images: ['/icon.svg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function NextGenFormatsGuide() {
