@@ -45,6 +45,24 @@ export default function HeaderNavigation() {
         >
           Guides
         </a>
+        <a
+          href="/tutorials"
+          className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+        >
+          Tutorials
+        </a>
+        <a
+          href="/faq"
+          className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+        >
+          FAQ
+        </a>
+        <a
+          href="/about"
+          className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+        >
+          About
+        </a>
       </div>
       
       {/* Mobile Navigation Button */}

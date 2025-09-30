@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import { ToastProvider, useToast } from '../components/ui/toast';
 import { Skeleton, ConversionSkeleton, StatsSkeleton, HistorySkeleton } from '../components/ui/skeleton';
 import { LazyImagePreview, LazyConversionResults, LazyProgressTracker, LazyConversionSettings, LazyFileUpload } from '../components/LazyComponents';
@@ -696,7 +697,7 @@ function HomeContent() {
                 </span>
               </motion.h2>
               <motion.p
-                className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto"
+                className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
@@ -704,6 +705,50 @@ function HomeContent() {
                 Transform your images with advanced compression and format conversion. 
                 Process multiple files simultaneously with our powerful local processing engine.
               </motion.p>
+              
+              {/* Key Features */}
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Privacy First</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    All conversions happen in your browser. Your files never leave your device, ensuring complete privacy and security.
+                  </p>
+                </div>
+                
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Lightning Fast</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    WASM-powered codecs with SIMD and multi-threading deliver maximum speed for your image conversions.
+                  </p>
+                </div>
+                
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">All Formats</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Support for JPG, PNG, WebP, AVIF, HEIC, TIFF, BMP, GIF, and SVG with smart format detection.
+                  </p>
+                </div>
+              </motion.div>
             </motion.div>
 
             {/* File Upload */}
@@ -1263,6 +1308,130 @@ function HomeContent() {
                 <InContentAd />
               </motion.div>
             )}
+
+            {/* FAQ Section */}
+            <motion.div
+              className="mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+            >
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 text-center">
+                  Frequently Asked Questions
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-blue-500 pl-4">
+                      <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Is my data secure?</h4>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Yes! All image processing happens locally in your browser. Your files never leave your device, ensuring complete privacy and security.
+                      </p>
+                    </div>
+                    
+                    <div className="border-l-4 border-purple-500 pl-4">
+                      <h4 className="font-semibold text-slate-900 dark:text-white mb-2">What file formats are supported?</h4>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        We support JPG, PNG, WebP, AVIF, HEIC, TIFF, BMP, GIF, and SVG. You can convert between any of these formats.
+                      </p>
+                    </div>
+                    
+                    <div className="border-l-4 border-green-500 pl-4">
+                      <h4 className="font-semibold text-slate-900 dark:text-white mb-2">How fast is the conversion?</h4>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Most images convert in under 2 seconds. Large files may take longer, but our WASM-powered engine ensures optimal performance.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-orange-500 pl-4">
+                      <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Can I process multiple files?</h4>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Absolutely! Upload multiple images at once and convert them all in a single batch operation with progress tracking.
+                      </p>
+                    </div>
+                    
+                    <div className="border-l-4 border-red-500 pl-4">
+                      <h4 className="font-semibold text-slate-900 dark:text-white mb-2">What's the file size limit?</h4>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Individual files up to 100MB are supported. For larger files, we automatically use edge processing for optimal performance.
+                      </p>
+                    </div>
+                    
+                    <div className="border-l-4 border-indigo-500 pl-4">
+                      <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Do I need to install anything?</h4>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        No installation required! SnapConvert works entirely in your web browser. Just visit the site and start converting.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Educational Content Section */}
+            <motion.div
+              className="mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.9 }}
+            >
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-8">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 text-center">
+                  Learn About Image Formats
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-3">WebP vs JPEG</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                      WebP offers 25-35% better compression than JPEG while maintaining similar quality. Perfect for web use.
+                    </p>
+                    <div className="text-xs text-blue-600 dark:text-blue-400">
+                      • 25-35% smaller files<br/>
+                      • Better compression<br/>
+                      • 95%+ browser support
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-3">AVIF - The Future</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                      AVIF provides 50%+ better compression than JPEG with superior quality. The next generation format.
+                    </p>
+                    <div className="text-xs text-green-600 dark:text-green-400">
+                      • 50%+ smaller files<br/>
+                      • Excellent quality<br/>
+                      • Growing browser support
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-3">HEIC for Mobile</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                      HEIC is Apple's format offering 50% better compression than JPEG, perfect for mobile photography.
+                    </p>
+                    <div className="text-xs text-purple-600 dark:text-purple-400">
+                      • 50% smaller files<br/>
+                      • Apple optimized<br/>
+                      • High quality
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="text-center mt-6">
+                  <Link
+                    href="/blog"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    Read Our Complete Guides
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
           </>
         )}
 
